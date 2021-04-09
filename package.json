@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "lerna run build",
+    "clean": "lerna run clean",
     "release": "lerna publish from-package --contents dist"
   },
   "repository": {
