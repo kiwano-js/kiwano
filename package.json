@@ -1,0 +1,30 @@
+{
+  "name": "kiwano",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "lerna run build",
+    "release": "lerna publish from-package --contents dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiwano-js/kiwano.git"
+  },
+  "private": true,
+  "author": "Bart Blok <bart@wittig.nl>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kiwano-js/kiwano/issues"
+  },
+  "homepage": "https://github.com/kiwano-js/kiwano#readme",
+  "devDependencies": {
+    "@types/node": "^14.14.37",
+    "lerna": "^4.0.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "9.1.1",
+    "typescript": "^4.2.3"
+  }
+}
