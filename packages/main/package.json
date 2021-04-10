@@ -1,0 +1,37 @@
+{
+  "name": "kiwano",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run clean && npm run compile && npm run copy",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "copy": "ts-node -T ../../scripts/copy.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiwano-js/kiwano.git"
+  },
+  "author": "Bart Blok <bart@wittig.nl>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kiwano-js/kiwano/issues"
+  },
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "homepage": "https://github.com/kiwano-js/kiwano#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "ts-node": "9.1.1",
+    "typescript": "^4.2.3"
+  },
+  "dependencies": {
+    "@kiwano/core": "^0.0.1"
+  }
+}
