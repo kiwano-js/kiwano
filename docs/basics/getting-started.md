@@ -259,7 +259,79 @@ Don't worry, Kiwano is designed to be very **flexible**, so you always remain in
 The names of the generated fields can always be specified: `.all('allProjects')`, and you can even control a [naming strategy](entity-schema/naming.md) for your entire schema.
 When you don't provide a name for a field, like the **all** field for `Project`, the name will be automatically generated (in this case the name will become `projects`).
 
-### 4. Use Plug-ins
+### 4. Attach resolvers
+Until now, we have only created a schema, but without any resolvers.
+
+You can specify your resolvers in two ways: 
+- Create separate resolver functions, and specify a resolver per field;
+- Bundle resolvers per schema, both for queries and mutations.
+
+If you prefer the first option, you can just add your resolver to a field in the following way:
+```typescript
+import allProjectsResolver from './resolvers/project/all'
+
+schema.query('projects', '[Project]', _ => _.resolver(allProjectsResolver))
+```
+
+However, in our schema we will use the second option. 
+Bundling your resolvers helps you to organize your resolvers and to share common functionality.
+
+Let's create resolvers for our `projectSchema`. 
+We will create two classes named `ProjectQueryResolvers` and a `ProjectMutationResolvers`.
+Resolver classes contain methods corresponding to the fields you want to write a resolver implementation for. 
+If you don't specify a method for a particular field, the default GraphQL resolver will be executed instead.
+
+**ProjectQueryResolvers.ts**
+```typescript
+export default class ProjectQueryResolvers {
+    
+    projects(){
+        // TODO: Implement
+    }
+}
+```
+
+**ProjectMutationResolvers.ts**
+```typescript
+export default class ProjectMutationResolvers {
+    
+    createProject(source, { input }){
+        // TODO: Implement
+    }
+}
+```
+
+**projectSchema.ts**
+```typescript
+import { entitySchema } from "@kiwano/core";
+
+import ProjectQueryResolvers from './resolvers/project/ProjectQueryResolvers'
+import ProjectMutationResolvers from './resolvers/project/ProjectMutationResolvers'
+
+export default function() {
+
+    return entitySchema('Project')
+    
+        .queryResolvers(ProjectQueryResolvers)
+        .mutationResolvers(ProjectMutationResolvers)
+
+        .entity(_ => _
+            .field('id', 'ID!')
+            .field('title', 'String')
+        )
+        
+        .all()
+        .create()
+}
+```
+
+For entity schemas you can use the `entityResolvers` method as well, entity resolvers contain methods to resolve fields within the entity object-type. 
+For the `User` object type, you could for example create a class named `UserEntityResolvers` with a method called `projects`. 
+In this method you can write the code necessary to fetch a user's projects.
+
+> Kiwano automatically adds your resolvers to the schema, so the final built GraphQL schema will contain all resolvers as well.
+
+### 5. Use Plug-ins
 Almost every GraphQL API has common features like filtering, sorting or pagination.
 These features require types, arguments and fields that are recurring over and over again, requiring you to write the same (similar) code multiple times.
 That's why Kiwano provides **plug-ins** that help you to add certain features to your schema in a very easy and fast way.
@@ -301,8 +373,45 @@ There are many more plug-ins you can use in your schemas, see the [plug-ins](plu
 > This means that you have to write the implementation of the (in this case) filtering yourself.
 > However, the TypeORM package also handles the implementation for you, so you don't have to add any resolver code yourself.
 
-### 5. Use TypeORM Model Schemas
+### 6. Use TypeORM Model Schemas
+If you use TypeORM as your ORM library, you can even let Kiwano handle resolvers as well.
+In addition to resolvers, your entity types are automatically generated based on your model. 
+The Type-ORM package also provides extension of the core plug-ins, so  filtering/sorting/pagination can be handled automatically.
 
-### 6. Attach resolvers
+Type TypeORM package contains a **modelSchema** builder, which extends from entitySchema.
+Instead of providing the name of your entity in the builder-function, you should pass your model class.
 
-### 7. Run server
+Let's migrate our `userSchema` to be a modelSchema.
+
+> Make sure to install the @kiwano/typeorm package first
+
+**userSchema.ts**
+```typescript
+import { modelSchema, equalsFilterPlugin } from "@kiwano/typeorm";
+import User from './models/User'
+
+export default function(){
+    
+    return modelSchema(User)
+    
+        .all(_ => _
+            .use(equalsFilterPlugin())
+        )
+    
+        .find()
+}
+```
+
+By default, Kiwano adds all fields in your model to your entity object-type, including relations. 
+Off course you can exclude or overwrite fields, read the [model schema](typeorm/model-schema.md) documentation for more info.
+
+This new version of our `userSchema` doens't need any custom resolvers, everything works by default.
+That means that users ae automatically fetched from the database, filtering is automatically applied and so on. Even mutations work fully automatic.
+
+In a real-world GraphQL API you will always need to customize the default resolvers for specific cases.
+That's why you can extend the default resolvers, and provide custom implementation for parts of the automatic resolvers. 
+The TypeORM package contains `ModelQueryResolvers` and `ModelMutationResolvers`
+
+
+
+### Run server
