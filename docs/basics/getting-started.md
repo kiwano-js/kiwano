@@ -376,7 +376,7 @@ There are many more plug-ins you can use in your schemas, see the [plug-ins](plu
 ### 6. Use TypeORM Model Schemas
 If you use TypeORM as your ORM library, you can even let Kiwano handle resolvers as well.
 In addition to resolvers, your entity types are automatically generated based on your model. 
-The Type-ORM package also provides extension of the core plug-ins, so  filtering/sorting/pagination can be handled automatically.
+The Type-ORM package also provides extensions of the core plug-ins, so  filtering/sorting/pagination can be handled automatically.
 
 Type TypeORM package contains a **modelSchema** builder, which extends from entitySchema.
 Instead of providing the name of your entity in the builder-function, you should pass your model class.
@@ -405,13 +405,60 @@ export default function(){
 By default, Kiwano adds all fields in your model to your entity object-type, including relations. 
 Off course you can exclude or overwrite fields, read the [model schema](typeorm/model-schema.md) documentation for more info.
 
-This new version of our `userSchema` doens't need any custom resolvers, everything works by default.
-That means that users ae automatically fetched from the database, filtering is automatically applied and so on. Even mutations work fully automatic.
+This new version of our `userSchema` doesn't need any custom resolvers, everything is handled automatically by Kiwano.
+That means that users are automatically fetched from the database, filtering is automatically applied and so on. Even mutations are implemented automatically.
 
 In a real-world GraphQL API you will always need to customize the default resolvers for specific cases.
-That's why you can extend the default resolvers, and provide custom implementation for parts of the automatic resolvers. 
-The TypeORM package contains `ModelQueryResolvers` and `ModelMutationResolvers`
+The TypeORM package provides an `all`, `find`, `create`, `update`, `delete` and `relation` resolver. 
 
+These resolvers are bundled in the `ModelQueryResolvers` and `ModelMutationResolvers` classes, which you can extend to override parts of the default implementation.
+In our case we can extend our `UserQueryResolvers` class from the Kiwano `ModelQueryResolvers` class.
+Every resolver provides numerous hooks, like `beforeFindQuery` of `transformAllResponse`. 
+You can choose to override some of these hooks to override specific parts, and use the default implementation for the remaining parts of the resolver.
+Read the [TypeORM resolvers](typeorm/resolvers.md) documentation for more information.
 
+### 7. Build schema & run server
+Now our schema is finished, we can build it. 
+Every schema provides a `build` method, which turns the Kiwano schema builder into an official GraphQL schema.
+This GraphQL schema can be used to pass to any GraphQL runtime library.
 
-### Run server
+First, let's build our schema. 
+Remember that we created the **schema.ts** file, which returns a schema that's merged with all sub-schemas.
+We only have to build this main schema, because it automatically builds any merged sub-schema as well.
+
+> Note that the build function returns a Promise, so we'll have to wait for it to be finished.
+
+**Express GraphQL**
+```typescript
+import express from 'express'
+import { graphqlHTTP } from 'express-graphql'
+import schema from './schema.ts'
+
+const schemaBuilder = schema();
+const graphQLSchema = await schemaBuilder.build();
+
+const app = express();
+
+app.use('/graphql',
+  graphqlHTTP({
+    schema: graphQLSchema
+  })
+);
+
+app.listen();
+```
+
+**Apollo Server**
+```typescript
+import { ApolloServer } from 'apollo-server'
+import schema from './schema.ts'
+
+const schemaBuilder = schema();
+const graphQLSchema = await schemaBuilder.build();
+
+const server = new ApolloServer({
+    schema: graphQLSchema
+});
+
+server.listen();
+```
