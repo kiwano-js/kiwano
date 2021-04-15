@@ -1,0 +1,13 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_FILENAME} !\.private/
+
+RewriteRule ^_assets/(.*)$ - [L]
+RewriteRule ^(.*)\.md$ - [L]
+RewriteRule ^favicon\.ico$ - [L]
+
+# Final rule for front end index
+RewriteRule ^index\.html$ - [L]
+# Redirect to front end index
+RewriteRule ^.* index.html [L]
