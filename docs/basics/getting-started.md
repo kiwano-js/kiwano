@@ -11,7 +11,7 @@ Kiwano consists of a core-package and additional optional sub-packages. The core
 
 `npm install @kiwano/typeorm`
 
-Off course, you need to make sure to install the `typeorm` package in your project as well.
+Of course, you need to make sure to install the `typeorm` package in your project as well.
 
 ## Overview
 Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations. This makes Kiwano an alternative to the GraphQL Definition Language. For example, instead of writing:
@@ -201,6 +201,8 @@ That's why Kiwano has a special kind of schema called an **entity schema**.
 An entity schema is a schema that contains all types and fields belonging to a particular entity.
 By using an entity schema instead of a regular one, Kiwano can help you by automatically configuring fields or objects for you.
 
+> Entity schemas extend from the regular schema, so you can use all methods available in **schema** as well.
+
 Let's update our `userSchema` and `projectSchema` to be entity schemas.
 
 **userSchema.ts**
@@ -376,14 +378,36 @@ There are many more plug-ins you can use in your schemas, see the [plug-ins](plu
 ### 6. Use TypeORM Model Schemas
 If you use TypeORM as your ORM library, you can even let Kiwano handle resolvers as well.
 In addition to resolvers, your entity types are automatically generated based on your model. 
-The Type-ORM package also provides extensions of the core plug-ins, so  filtering/sorting/pagination can be handled automatically.
+The TypeORM package also provides extensions of the core plug-ins, so filtering/sorting/pagination can be handled automatically.
 
-Type TypeORM package contains a **modelSchema** builder, which extends from entitySchema.
+Type TypeORM package provides a **modelSchema** builder, which extends from entitySchema.
 Instead of providing the name of your entity in the builder-function, you should pass your model class.
 
 Let's migrate our `userSchema` to be a modelSchema.
 
 > Make sure to install the @kiwano/typeorm package first
+
+**User.ts**
+```typescript
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity } from "typeorm";
+import Project from "./Project";
+
+@Entity('users')
+export default class User extends BaseEntity {
+
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    name?: string;
+
+    @Column()
+    age?: number;
+    
+    @OneToMany(() => Project, project => project.user)
+    projects: Project[]
+}
+```
 
 **userSchema.ts**
 ```typescript
