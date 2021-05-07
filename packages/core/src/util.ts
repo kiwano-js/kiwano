@@ -19,6 +19,13 @@ export interface BuilderArgs<T> {
     configurator: Configurator<T>
 }
 
+export interface ResolvedType {
+    type: string | any
+    nonNull: boolean
+    list: boolean
+    nonNullList: boolean
+}
+
 export function resolveAutoBuilderArgs<T>(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<T>, configuratorArg: Configurator<T>, builderType): BuilderArgs<T> {
 
     let builder: T = null;
@@ -79,6 +86,25 @@ export function resolveBuilder<V>(args: BuilderArgs<V>, defaultBuilderGenerator:
     }
 
     return resolvedBuilder;
+}
+
+const nonNullTypePattern = /(.+)!$/
+const nonNullListTypePattern = /\[(.+)!]/
+const listTypePattern = /\[(.+)]/
+const baseTypePattern = /\[?(\w+)]?!?/
+
+export function resolveType(type: string | any): ResolvedType {
+
+    if(!isString(type)){
+        return { type, nonNull: false, nonNullList: false, list: false };
+    }
+
+    const nonNull = nonNullTypePattern.test(type)
+    const nonNullList = nonNullListTypePattern.test(type)
+    const list = listTypePattern.test(type);
+    const baseMatches = baseTypePattern.exec(type);
+
+    return { nonNull, list, nonNullList, type: baseMatches[1] };
 }
 
 export function isTypeInput(type: FieldType, schema: AbstractSchemaBuilder<any>): boolean {

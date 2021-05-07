@@ -9,6 +9,7 @@ import { ObjectTypeBuilder } from "./objectType";
 import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError, builderInfoExtensionName } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
+import { resolveType } from "./util";
 
 export interface FieldBuilderInfo {
     name: string
@@ -17,6 +18,7 @@ export interface FieldBuilderInfo {
     arguments: ArgumentBuilder[],
     extensions: Map<string, any>
     nonNull: boolean
+    nonNullList: boolean
     list: boolean
     allowedRoles: Set<string>
     deniedRoles: Set<string>
@@ -36,6 +38,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
     protected _extensions = new Map<string, any>();
 
     protected _nonNull: boolean = false;
+    protected _nonNullList: boolean = false;
     protected _list: boolean = false;
 
     protected _allowedRoles = new Set<string>();
@@ -46,12 +49,19 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
     constructor(name: BuilderName, type: FieldType = null) {
 
         super(name);
-        this._type = type;
+        this.type(type);
     }
 
     type(type: FieldType){
 
-        this._type = type;
+        const resolvedType = resolveType(type);
+
+        this._type = resolvedType.type;
+
+        if(resolvedType.nonNull) this.nonNull();
+        if(resolvedType.list) this.list();
+        if(resolvedType.nonNullList) this.nonNullList();
+
         return this;
     }
 
@@ -107,6 +117,18 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
     list(list: boolean = true): this {
 
         this._list = list;
+        return this;
+    }
+
+    nonNullList(): this;
+    nonNullList(nonNullList: boolean): this;
+    nonNullList(nonNullList: boolean = true): this {
+
+        if(nonNullList){
+            this.list();
+        }
+
+        this._nonNullList = nonNullList;
         return this;
     }
 
@@ -167,6 +189,11 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
         let type = isString(this._type) ? context.getType(this._type) as GraphQLOutputType : this._type;
 
         if(this._list){
+
+            if(this._nonNullList){
+                type = GraphQLNonNull(type);
+            }
+
             type = GraphQLList(type);
         }
 
@@ -203,6 +230,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             arguments: clone(this._arguments),
             extensions: new Map(this._extensions),
             nonNull: this._nonNull,
+            nonNullList: this._nonNullList,
             list: this._list,
             allowedRoles: new Set(this._allowedRoles),
             deniedRoles: new Set(this._deniedRoles),
