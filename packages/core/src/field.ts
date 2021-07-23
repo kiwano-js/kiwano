@@ -187,6 +187,9 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
         }
 
         let type = isString(this._type) ? context.getType(this._type) as GraphQLOutputType : this._type;
+        if(type === null){
+            throw new BuilderError(`Type "${this._type}" of field "${this.name}" not found`);
+        }
 
         if(this._list){
 
