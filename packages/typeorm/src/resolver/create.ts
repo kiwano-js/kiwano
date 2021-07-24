@@ -50,7 +50,7 @@ export interface InsertModelResult {
 export interface CreateResolverBaseHooks<ModelType, SourceType> extends ModelInputMutationResolverHooks<ModelType, SourceType> {
 
     $beforeCreateResolver?(info: CreateResolverInfo<SourceType>): OptionalPromise
-    $afterCreateResolver?(info: CreateResolverInfo<SourceType>): OptionalPromise
+    $afterCreateResolver?(info: CreateResolverInfo<SourceType>, result: ModelType): OptionalPromise
 
     $validateCreateInput?(input: AnyObject, info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
     $createAllowed?(info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
@@ -243,7 +243,7 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
             result = last(compact(transformedResult)) || result;
         }
 
-        await executeHooks('$afterCreateResolver', hooks => hooks.$afterCreateResolver(resolverInfo));
+        await executeHooks('$afterCreateResolver', hooks => hooks.$afterCreateResolver(resolverInfo, model));
         await executeHooks('$afterResolver', hooks => hooks.$afterResolver(resolverInfo));
 
         return result;

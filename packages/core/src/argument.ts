@@ -6,6 +6,7 @@ import { GraphQLNonNull, GraphQLList } from "graphql";
 
 import Builder, { BuildContext, FinalizeContext, builderInfoExtensionName, BuilderName } from "./Builder";
 import { Plugin } from "./plugin";
+import { resolveType } from "./util";
 
 export type ArgumentType = string | GraphQLInputType;
 
@@ -15,6 +16,7 @@ export interface ArgumentBuilderInfo {
     description?: string
     extensions: Map<string, any>
     nonNull: boolean
+    nonNullList: boolean
     list: boolean
     plugins: Plugin[]
 }
@@ -27,17 +29,25 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
     protected _extensions = new Map<string, any>();
 
     protected _nonNull: boolean = false;
+    protected _nonNullList: boolean = false;
     protected _list: boolean = false;
 
     constructor(name: BuilderName, type: ArgumentType) {
 
         super(name);
-        this._type = type;
+        this.type(type);
     }
 
     type(type: ArgumentType){
 
-        this._type = type;
+        const resolvedType = resolveType(type);
+
+        this._type = resolvedType.type;
+
+        if(resolvedType.nonNull) this.nonNull();
+        if(resolvedType.list) this.list();
+        if(resolvedType.nonNullList) this.nonNullList();
+
         return this;
     }
 
@@ -69,6 +79,18 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
         return this;
     }
 
+    nonNullList(): this;
+    nonNullList(nonNullList: boolean): this;
+    nonNullList(nonNullList: boolean = true): this {
+
+        if(nonNullList){
+            this.list();
+        }
+
+        this._nonNullList = nonNullList;
+        return this;
+    }
+
     async finalizeBuilder(context: FinalizeContext){
 
         const info = this.info();
@@ -89,6 +111,11 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
         let type = isString(this._type) ? context.getType(this._type) as GraphQLInputType : this._type;
 
         if(this._list){
+
+            if(this._nonNullList){
+                type = GraphQLNonNull(type);
+            }
+
             type = GraphQLList(type);
         }
 
@@ -118,6 +145,7 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
             description: this._description,
             extensions: new Map(this._extensions),
             nonNull: this._nonNull,
+            nonNullList: this._nonNullList,
             list: this._list,
             plugins: clone(this._plugins)
         }

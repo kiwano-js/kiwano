@@ -13,7 +13,7 @@ export interface AclMiddlewareOptions {
 }
 
 export const defaultAclMiddlewareOptions: AclMiddlewareOptions = {
-    rolePath: "session.role",
+    rolePath: "role",
     onForbidden: resource => { throw new ForbiddenError(`No access to ${resource}`, { test: 'j'}) }
 }
 
