@@ -35,7 +35,7 @@ schema.object('Project', _ => _
 Kiwano is not a GraphQL runtime library, so it's not a replacement for runtimes like [Express GraphQL](https://github.com/graphql/express-graphql) or [Apollo Server](https://www.apollographql.com/docs/apollo-server/). Instead, use Kiwano to build your schema, and pass this schema to your favourite runtime library in order to serve your GraphQL API.
 
 ## Usage
-Kiwano is a **progressive framework**, so it's designed to be incrementally adoptable. The most basic usage is to create your schema programmatically, and manually write the same types as you would do in the GraphQL definition language.
+Kiwano is a **progressive framework**, so it's designed to be incrementally adoptable. The most basic usage is to create your schema programmatically, hence manually defining the same types as you would do in the GraphQL definition language.
 Optionally, you can also choose to modularize your schema into several components, use plug-ins to decorate your fields or even generate you entire schema and resolvers based on [TypeORM](typeorm/getting-started.md) models.
 
 The steps below gradually make more and more use of Kiwano, it is up to you how many features of the framework you want to use.
@@ -106,11 +106,11 @@ export default function(){
 > The use of this `build` method explained later.
 
 > Note that we export a function which returns the schema builder instead of directly exporting the builder.
-> This is a Javascript/Typescript convention that enables us to create the schema when we want to, instead of directly during import.
+> This is a Javascript/Typescript convention that enables us to create the schema when we want to, instead of immediately during import.
 
 You may have noticed the weird looking syntax `_ => _`, this is to improve readability. Most methods on the schema allow you to pass a configurator function. 
 When you call the `object` method for example, Kiwano creates as object-type builder with the given name and return type. 
-This object-type builder is passed to the optional configurator function you provided, which enables you to further configure the object-type. 
+This object-type builder is passed to the optional configurator function we provided, which enables you to further configure the object-type. 
 You are free to give this argument any name you want, so you could also write like: `schema.query('users', 'User', field => field.list())`. 
 
 > There is another way to configure builders, see [Concepts](basics/concepts.md) for more information.
@@ -254,7 +254,7 @@ export default function() {
 
 By using an **entity schema**, fields like **all** or **find** (`users` or `user`) can be automatically generated.
 The only thing you need to do is to provide the name for the entity as argument in the `entitySchema` function, and configure the automatically created entity object type (using the `entity` method).
-Now Kiwano can create and configure fields for you and automatically generate accompanying types like `CreateProjectInput`.
+Now Kiwano can create and configure fields for you, and automatically generate accompanying types like `CreateProjectInput`.
 Entity schema extends from the regular schema, so you can use all features of the regular schema as well.
 
 Don't worry, Kiwano is designed to be very **flexible**, so you always remain in control.
@@ -336,9 +336,9 @@ In this method you can write the code necessary to fetch a user's projects.
 ### 5. Use Plug-ins
 Almost every GraphQL API has common features like filtering, sorting or pagination.
 These features require types, arguments and fields that are recurring over and over again, requiring you to write the same (similar) code multiple times.
-That's why Kiwano provides **plug-ins** that help you to add certain features to your schema in a very easy and fast way.
+That's why Kiwano provides **plug-ins** which help you to add certain features to your schema in a very easy and fast way.
 
-In our schema, the `users` field has an option to specify a filter. Fortunately, Kiwano contains a plug-ins that automatically adds the required input type and argument. 
+In our schema, the `users` field has an option to specify a filter. Fortunately, Kiwano provides a plug-in that automatically adds the required input type and argument. 
 Let's alter our `userSchema` and use the **equals filter**, which generates an input object-type with all relevant fields from the configured entity object-type, together with an argument that enables API-users to specify a filter in the `users` field.
 
 **userSchema.ts**
@@ -427,7 +427,7 @@ export default function(){
 ```
 
 By default, Kiwano adds all fields in your model to your entity object-type, including relations. 
-Off course you can exclude or overwrite fields, read the [model schema](typeorm/model-schema.md) documentation for more info.
+Of course, you can exclude or overwrite fields, read the [model schema](typeorm/model-schema.md) documentation for more info.
 
 This new version of our `userSchema` doesn't need any custom resolvers, everything is handled automatically by Kiwano.
 That means that users are automatically fetched from the database, filtering is automatically applied and so on. Even mutations are implemented automatically.
@@ -436,8 +436,8 @@ In a real-world GraphQL API you will always need to customize the default resolv
 The TypeORM package provides an `all`, `find`, `create`, `update`, `delete` and `relation` resolver. 
 
 These resolvers are bundled in the `ModelQueryResolvers` and `ModelMutationResolvers` classes, which you can extend to override parts of the default implementation.
-In our case we can extend our `UserQueryResolvers` class from the Kiwano `ModelQueryResolvers` class.
-Every resolver provides numerous hooks, like `beforeFindQuery` of `transformAllResponse`. 
+In our case we should extend our `UserQueryResolvers` class from the Kiwano `ModelQueryResolvers` class.
+Each resolver provides numerous hooks, like `beforeFindQuery` of `transformAllResponse`. 
 You can choose to override some of these hooks to override specific parts, and use the default implementation for the remaining parts of the resolver.
 Read the [TypeORM resolvers](typeorm/resolvers.md) documentation for more information.
 
@@ -448,7 +448,7 @@ This GraphQL schema can be used to pass to any GraphQL runtime library.
 
 First, let's build our schema. 
 Remember that we created the **schema.ts** file, which returns a schema that's merged with all sub-schemas.
-We only have to build this main schema, because it automatically builds any merged sub-schema as well.
+We only have to build this main schema, because it automatically builds any merged sub-schemas as well.
 
 > Note that the build function returns a Promise, so we'll have to wait for it to be finished.
 
