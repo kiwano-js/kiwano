@@ -14,7 +14,7 @@ export interface AclMiddlewareOptions {
 
 export const defaultAclMiddlewareOptions: AclMiddlewareOptions = {
     rolePath: "role",
-    onForbidden: resource => { throw new ForbiddenError(`No access to ${resource}`, { test: 'j'}) }
+    onForbidden: resource => { throw new ForbiddenError(`No access to ${resource}`) }
 }
 
 export function expressAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null) {
@@ -23,15 +23,17 @@ export function expressAclMiddleware(acl: AclPlugin, config: AclValidateConfigTy
 
     return (req, res, next) => {
 
+        const fullPath = req.baseUrl + req.path;
+
         if(!config){
-            config = { resource: req.path };
+            config = { resource: fullPath };
         }
 
         const role = get(req, fullOptions.rolePath) ?? null;
         const allowed = acl.validate(config, role);
 
         if(!allowed){
-            options.onForbidden(req.path);
+            fullOptions.onForbidden(fullPath);
         }
 
         next();
@@ -55,7 +57,7 @@ export function graphQLAclMiddleware(acl: AclPlugin, config: AclValidateConfigTy
         const allowed = acl.validate(parsedConfig, role);
 
         if(!allowed){
-            options.onForbidden(pathResource);
+            fullOptions.onForbidden(pathResource);
         }
 
         return resolve(root, args, context, info);

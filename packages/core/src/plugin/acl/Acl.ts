@@ -201,7 +201,7 @@ export class AclPlugin implements Plugin {
 
     middleware(config: AclValidateConfigType = null) {
 
-        return expressAclMiddleware(this, config);
+        return expressAclMiddleware(this, config, this._options);
     }
 
     rolePath(path: string): this {
@@ -307,7 +307,7 @@ export class AclPlugin implements Plugin {
     }
 }
 
-export function aclPlugin(options: AclOptions){
+export function aclPlugin(options?: AclOptions){
 
     return new AclPlugin(options);
 }
