@@ -5,6 +5,7 @@
   - [Object types & fields](basics/types.md)
   - [Enums](basics/enums.md)
   - [Resolvers](basics/resolvers.md)
+  - [Middleware](basics/middleware.md)
   - [Examples](basics/examples.md)
     
 - Entity Schema
