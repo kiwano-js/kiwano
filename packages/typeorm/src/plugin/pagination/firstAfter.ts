@@ -1,6 +1,4 @@
-import isNil from 'lodash/isNil'
-import isArray from 'lodash/isArray'
-import clone from 'lodash/clone'
+import { isNil, isArray, clone } from 'lodash'
 
 import {
     ConstructorType,

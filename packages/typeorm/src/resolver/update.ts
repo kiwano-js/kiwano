@@ -1,14 +1,8 @@
+import { compact, last, assign, pickBy, flatten, cloneDeep, clone } from 'lodash'
+
 import { GraphQLResolveInfo } from "graphql";
 
 import { Connection, EntityManager, UpdateQueryBuilder } from "typeorm";
-
-import compact from 'lodash/compact'
-import last from "lodash/last";
-import assign from "lodash/assign";
-import pickBy from "lodash/pickBy";
-import flatten from 'lodash/flatten'
-import cloneDeep from 'lodash/cloneDeep'
-import clone from 'lodash/clone'
 
 import {
     AnyObject,

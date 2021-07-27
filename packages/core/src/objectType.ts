@@ -1,5 +1,4 @@
-import clone from 'lodash/clone'
-import isString from 'lodash/isString'
+import { clone, isString } from 'lodash'
 
 import { GraphQLObjectType } from "graphql";
 

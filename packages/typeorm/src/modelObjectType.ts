@@ -1,5 +1,4 @@
-import flatten from 'lodash/flatten'
-import isString from 'lodash/isString'
+import { flatten, isString } from 'lodash'
 
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 

@@ -1,10 +1,9 @@
+import { defaults, isString }  from "lodash";
+
 import { GraphQLString } from "graphql";
 
 import { Brackets, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
-
-import defaults from "lodash/defaults";
-import isString from "lodash/isString";
 
 import {
     BuildContext,

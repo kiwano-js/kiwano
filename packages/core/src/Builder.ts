@@ -1,4 +1,4 @@
-import isFunction from 'lodash/isFunction'
+import { isFunction } from 'lodash'
 
 import { GraphQLScalarType, GraphQLType } from "graphql";
 import { GraphQLFieldResolver } from "graphql/type/definition";

@@ -1,6 +1,6 @@
-import { SelectQueryBuilder } from "typeorm";
+import { isNil } from 'lodash'
 
-import isNil from 'lodash/isNil'
+import { SelectQueryBuilder } from "typeorm";
 
 import {
     ConstructorType,

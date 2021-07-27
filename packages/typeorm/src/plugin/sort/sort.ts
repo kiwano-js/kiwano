@@ -1,7 +1,7 @@
+import { defaults } from "lodash";
+
 import { SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
-
-import defaults from "lodash/defaults";
 
 import {
     BuildContext,

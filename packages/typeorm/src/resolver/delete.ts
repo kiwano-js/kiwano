@@ -1,10 +1,9 @@
+import { compact, flatten } from 'lodash'
+
 import { GraphQLResolveInfo } from "graphql";
 
 import { Connection, DeleteQueryBuilder, EntityManager } from "typeorm";
 import { SoftDeleteQueryBuilder } from "typeorm/query-builder/SoftDeleteQueryBuilder";
-
-import compact from 'lodash/compact'
-import flatten from 'lodash/flatten'
 
 import {
     AnyObject,

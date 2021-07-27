@@ -1,8 +1,7 @@
 import { GraphQLUnionType } from "graphql/type/definition";
 import { GraphQLOutputType } from "graphql";
 
-import isString from 'lodash/isString'
-import clone from "lodash/clone";
+import { isString, clone } from 'lodash'
 
 import Builder, { BuildContext, builderInfoExtensionName, BuilderName, FinalizeContext } from "./Builder";
 import { Plugin } from "./plugin";

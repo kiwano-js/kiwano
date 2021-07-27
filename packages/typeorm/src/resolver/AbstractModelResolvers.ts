@@ -1,6 +1,6 @@
-import { defaultFieldResolver, GraphQLResolveInfo } from "graphql";
+import { isFunction } from 'lodash'
 
-import isFunction from 'lodash/isFunction'
+import { defaultFieldResolver, GraphQLResolveInfo } from "graphql";
 
 import {
     AnyObject,

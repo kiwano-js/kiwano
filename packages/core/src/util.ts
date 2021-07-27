@@ -1,5 +1,4 @@
-import isString from "lodash/isString";
-import isFunction from "lodash/isFunction";
+import { isString, isFunction } from "lodash";
 
 import { GraphQLScalarType } from "graphql";
 import { GraphQLEnumType } from "graphql/type/definition";

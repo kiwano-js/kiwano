@@ -1,5 +1,5 @@
 import { GraphQLEnumValueConfig } from "graphql/type/definition";
-import clone from "lodash/clone";
+import { clone } from "lodash";
 
 import Builder, { BuildContext, FinalizeContext, builderInfoExtensionName, BuilderName } from "./Builder";
 import { Plugin } from "./plugin";

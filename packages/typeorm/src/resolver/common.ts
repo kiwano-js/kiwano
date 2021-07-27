@@ -1,8 +1,8 @@
+import { first } from "lodash";
+
 import { EntityManager, Repository, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
-
-import first from "lodash/first";
 
 import {
     AnyObject,

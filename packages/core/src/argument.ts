@@ -1,5 +1,4 @@
-import isString from 'lodash/isString'
-import clone from "lodash/clone";
+import { isString, clone } from 'lodash'
 
 import { GraphQLArgumentConfig, GraphQLInputType } from "graphql/type/definition";
 import { GraphQLNonNull, GraphQLList } from "graphql";

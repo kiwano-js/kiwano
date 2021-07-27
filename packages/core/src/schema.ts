@@ -1,9 +1,4 @@
-import isFunction from 'lodash/isFunction'
-import clone from 'lodash/clone'
-import compact from 'lodash/compact'
-import isString from 'lodash/isString'
-import isArray from 'lodash/isArray'
-import isObjectLike from 'lodash/isObjectLike'
+import { isFunction, clone, compact, isString, isArray, isObjectLike } from 'lodash'
 
 import { mergeSchemas } from "@graphql-tools/merge";
 import { applyMiddleware } from "graphql-middleware";

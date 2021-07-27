@@ -1,7 +1,6 @@
 import { Path } from "graphql/jsutils/Path";
 
-import defaults from "lodash/defaults";
-import get from "lodash/get";
+import { defaults, get } from "lodash";
 
 import { AclValidateConfigType, AclPlugin } from "./acl";
 import { ForbiddenError } from "../../error/resolver";

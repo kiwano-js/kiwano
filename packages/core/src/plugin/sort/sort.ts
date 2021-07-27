@@ -1,4 +1,4 @@
-import defaults from "lodash/defaults";
+import { defaults } from "lodash";
 
 import { FieldBuilder } from "../../field";
 import inputObject, { InputObjectTypeBuilder } from "../../inputObjectType";

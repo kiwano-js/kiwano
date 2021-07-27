@@ -1,6 +1,4 @@
-import compact from 'lodash/compact'
-import flatten from 'lodash/flatten'
-import isNaN from 'lodash/isNaN'
+import { compact, flatten, isNaN } from 'lodash'
 
 import { SelectQueryBuilder } from "typeorm";
 import { RelationMetadata } from "typeorm/metadata/RelationMetadata";

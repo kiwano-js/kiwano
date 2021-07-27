@@ -1,9 +1,7 @@
+import { isArray, defaults, isString } from 'lodash'
+
 import { Brackets, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
-
-import isArray from 'lodash/isArray'
-import defaults from "lodash/defaults";
-import isString from "lodash/isString";
 
 import {
     BuildContext,

@@ -1,10 +1,7 @@
+import { compact, last, flatten, clone } from 'lodash'
+
 import { GraphQLResolveInfo } from "graphql";
 import { Connection, SelectQueryBuilder } from "typeorm";
-
-import compact from 'lodash/compact'
-import last from 'lodash/last'
-import flatten from 'lodash/flatten'
-import clone from 'lodash/clone'
 
 import { AnyObject, FieldBuilderInfo, ForbiddenError, Optional, OptionalPromise, ResolverInfo } from "@kiwano/core";
 

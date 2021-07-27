@@ -1,6 +1,4 @@
-import isArray from 'lodash/isArray'
-import first from 'lodash/first'
-import last from 'lodash/last'
+import { isArray, first, last } from 'lodash'
 
 import {
     ConnectionPaginationPlugin as CoreConnectionPaginationPlugin,

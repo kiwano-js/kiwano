@@ -1,7 +1,7 @@
+import { isString } from 'lodash'
+
 import { ColumnType } from "typeorm";
 import { JSONResolver, UUIDResolver, ByteResolver, DateTimeResolver, DateResolver, TimeResolver } from "graphql-scalars";
-
-import isString from 'lodash/isString'
 
 import { ColumnTypeMapperInfo, ColumnTypeMapperResult } from "./common";
 

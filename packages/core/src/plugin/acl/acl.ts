@@ -1,9 +1,4 @@
-import isArray from 'lodash/isArray'
-import isString from "lodash/isString";
-import isNumber from "lodash/isNumber";
-import sortBy from "lodash/sortBy";
-import escapeRegExp from "lodash/escapeRegExp";
-import defaults from "lodash/defaults";
+import { isArray, isString, isNumber, sortBy, escapeRegExp, defaults } from 'lodash'
 
 import {
     AclMiddlewareOptions,
@@ -11,6 +6,7 @@ import {
     expressAclMiddleware,
     graphQLAclMiddleware
 } from "./middleware";
+
 import FrameworkError from "../../error/FrameworkError";
 import { Plugin } from "../common";
 import { SchemaBuilder } from "../../schema";
