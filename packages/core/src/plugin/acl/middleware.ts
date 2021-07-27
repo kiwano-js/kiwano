@@ -3,7 +3,7 @@ import { Path } from "graphql/jsutils/Path";
 import defaults from "lodash/defaults";
 import get from "lodash/get";
 
-import Acl, { AclValidateConfigType } from "./Acl";
+import { AclValidateConfigType, AclPlugin } from "./Acl";
 import { ForbiddenError } from "../../error/resolver";
 import { Middleware } from "../../common";
 
@@ -17,7 +17,7 @@ export const defaultAclMiddlewareOptions: AclMiddlewareOptions = {
     onForbidden: resource => { throw new ForbiddenError(`No access to ${resource}`, { test: 'j'}) }
 }
 
-export function expressAclMiddleware(acl: Acl, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null) {
+export function expressAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null) {
 
     const fullOptions = getOptions(options);
 
@@ -38,7 +38,7 @@ export function expressAclMiddleware(acl: Acl, config: AclValidateConfigType = n
     }
 }
 
-export function graphQLAclMiddleware(acl: Acl, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null): Middleware {
+export function graphQLAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null): Middleware {
 
     const fullOptions = getOptions(options);
 

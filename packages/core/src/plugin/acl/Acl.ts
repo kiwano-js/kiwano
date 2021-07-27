@@ -5,8 +5,15 @@ import sortBy from "lodash/sortBy";
 import escapeRegExp from "lodash/escapeRegExp";
 import defaults from "lodash/defaults";
 
-import { expressAclMiddleware } from "./middleware";
+import {
+    AclMiddlewareOptions,
+    defaultAclMiddlewareOptions,
+    expressAclMiddleware,
+    graphQLAclMiddleware
+} from "./middleware";
 import FrameworkError from "../../error/FrameworkError";
+import { Plugin } from "../common";
+import { SchemaBuilder } from "../../schema";
 
 export type AclRoleIdentifier = string | number;
 
@@ -32,7 +39,7 @@ export interface AclValidateConfig {
 
 export type AclValidateConfigType = AclValidateConfig | AclRoleIdentifier | AclRoleIdentifier[]
 
-export interface AclOptions {
+export interface AclOptions extends AclMiddlewareOptions {
     defaultAction?: AclAction
     learn?: boolean
 }
@@ -42,13 +49,18 @@ export const defaultAclOptions: AclOptions = {
     learn: true
 }
 
-export abstract class AbstractAcl<OT extends AclOptions> {
+export class AclPlugin implements Plugin {
 
-    protected _options: OT;
+    protected _options: AclOptions;
 
     protected _roles = new Map<AclRoleIdentifier, AclRoleConfig>()
     protected _allowRules = new Map<string, AclRuleConfig>()
     protected _denyRules = new Map<string, AclRuleConfig>()
+
+    constructor(options?: AclOptions) {
+
+        this._options = defaults(options || {}, defaultAclMiddlewareOptions, defaultAclOptions);
+    }
 
     defaultAction(action: AclAction): this {
 
@@ -192,6 +204,48 @@ export abstract class AbstractAcl<OT extends AclOptions> {
         return expressAclMiddleware(this, config);
     }
 
+    rolePath(path: string): this {
+
+        this._options.rolePath = path;
+        return this;
+    }
+
+    onForbidden(handler: (resource: string) => void): this {
+
+        this._options.onForbidden = handler;
+        return this;
+    }
+
+    beforeBuildSchema(builder: SchemaBuilder) {
+
+        // Add middleware
+        builder.use(graphQLAclMiddleware(this, null, this._options));
+
+        // Add rules
+        for(let type of builder.getObjectTypes()){
+
+            const typeInfo = type.info();
+            this.addRules(`${type.name}.*`, typeInfo.allowedRoles, typeInfo.deniedRoles);
+
+            for(let field of type.info().fields){
+
+                const fieldInfo = field.info()
+                this.addRules(`${type.name}.${field.name}`, fieldInfo.allowedRoles, fieldInfo.deniedRoles);
+            }
+        }
+    }
+
+    protected addRules(resource: string, allowed: Set<string>, denied: Set<string>){
+
+        if(allowed.size > 0){
+            this.allow(resource, Array.from(allowed));
+        }
+
+        if(denied.size > 0){
+            this.deny(resource, Array.from(denied));
+        }
+    }
+
     protected _findRules(resource: string, collection: Map<string, AclRuleConfig>): AclRuleConfig[] {
 
         const allRules = Array.from(collection.values());
@@ -253,13 +307,9 @@ export abstract class AbstractAcl<OT extends AclOptions> {
     }
 }
 
-export class Acl extends AbstractAcl<AclOptions> {
+export function aclPlugin(options: AclOptions){
 
-    constructor(options?: AclOptions) {
-
-        super();
-        this._options = defaults(options || {}, defaultAclOptions);
-    }
+    return new AclPlugin(options);
 }
 
-export default Acl;
+export default aclPlugin;

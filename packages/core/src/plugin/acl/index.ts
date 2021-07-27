@@ -1,7 +1,6 @@
-import plugin from "./plugin";
+import { aclPlugin } from './acl'
 
 export * from './Acl'
 export * from './middleware'
-export * from './plugin'
 
-export default plugin;
+export default aclPlugin;
