@@ -3,7 +3,7 @@ import { Path } from "graphql/jsutils/Path";
 import defaults from "lodash/defaults";
 import get from "lodash/get";
 
-import { AclValidateConfigType, AclPlugin } from "./Acl";
+import { AclValidateConfigType, AclPlugin } from "./acl";
 import { ForbiddenError } from "../../error/resolver";
 import { Middleware } from "../../common";
 
