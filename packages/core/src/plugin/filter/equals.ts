@@ -1,13 +1,13 @@
 import { defaults } from "lodash";
 
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import inputObject, { InputObjectTypeBuilder } from "../../inputObjectType";
 import { ObjectTypeBuilder } from "../../objectType";
 import { InputFieldType } from "../../inputField";
 import { isTypeInput } from "../../util";
 import { Plugin } from "../common";
 import PluginError from "../PluginError";
-import { BuildContext } from "../../Builder";
+import { FinalizeContext } from "../../Builder";
 
 export interface EqualsFilterPluginOptions {
     multi?: boolean
@@ -83,9 +83,8 @@ export class EqualsFilterPlugin implements Plugin {
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    afterFinalizeField(builder: FieldBuilder, context: FinalizeContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }
@@ -113,7 +112,7 @@ export class EqualsFilterPlugin implements Plugin {
         builder.arg(this._options.argumentName, inputTypeName, _ => _.description(`Configuration for how the nodes should be filtered`));
     }
 
-    protected _createFilterInputType(context: BuildContext, name: string, targetObjectType?: ObjectTypeBuilder): InputObjectTypeBuilder {
+    protected _createFilterInputType(context: FinalizeContext, name: string, targetObjectType?: ObjectTypeBuilder): InputObjectTypeBuilder {
 
         const inputObjectType = inputObject(name)
             .description(`Configuration for how the nodes should be filtered`);
@@ -164,7 +163,7 @@ export class EqualsFilterPlugin implements Plugin {
         return inputObjectType;
     }
 
-    protected _getExtraFieldConfigs(context: BuildContext, name: string, targetObjectType?: ObjectTypeBuilder): Set<EqualsFilterPluginFieldConfig> {
+    protected _getExtraFieldConfigs(context: FinalizeContext, name: string, targetObjectType?: ObjectTypeBuilder): Set<EqualsFilterPluginFieldConfig> {
         return null;
     }
 }

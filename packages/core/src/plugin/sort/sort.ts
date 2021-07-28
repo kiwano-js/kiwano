@@ -1,13 +1,13 @@
 import { defaults } from "lodash";
 
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import inputObject, { InputObjectTypeBuilder } from "../../inputObjectType";
 import enumType, { EnumTypeBuilder } from "../../enumType";
 import { ObjectTypeBuilder } from "../../objectType";
 import { isTypeInput } from "../../util";
 import { Plugin } from "../common";
 import PluginError from "../PluginError";
-import { BuildContext } from "../../Builder";
+import { FinalizeContext } from "../../Builder";
 
 export enum SortDirection {
     ASC = 'ASC', DESC = 'DESC'
@@ -101,9 +101,8 @@ export class SortPlugin implements Plugin {
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    afterFinalizeField(builder: FieldBuilder, context: FinalizeContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }
@@ -155,7 +154,7 @@ export class SortPlugin implements Plugin {
             .field('direction', this._options.directionEnumName, _ => _.nonNull().description('Direction to sort'));
     }
 
-    protected _createSortFieldEnum(context: BuildContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): EnumTypeBuilder {
+    protected _createSortFieldEnum(context: FinalizeContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): EnumTypeBuilder {
 
         const enumBuilder = enumType(name)
             .description(`Field to sort ${typeName} on`);
@@ -205,7 +204,7 @@ export class SortPlugin implements Plugin {
             .value(SortDirection.DESC, SortDirection.DESC, _ => _.description('Sort descending'))
     }
 
-    protected _getExtraEnumValues(context: BuildContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): Set<string> {
+    protected _getExtraEnumValues(context: FinalizeContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): Set<string> {
         return null;
     }
 }

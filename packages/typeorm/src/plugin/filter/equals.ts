@@ -4,7 +4,7 @@ import { Brackets, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
-    BuildContext,
+    FinalizeContext,
     camelize,
     ConstructorType,
     defaultEqualsFilterPluginOptions as coreDefaultOptions,
@@ -241,7 +241,7 @@ export class EqualsFilterPlugin extends CoreEqualsFilterPlugin implements Plugin
         }
     }
 
-    protected _getExtraFieldConfigs(context: BuildContext, name: string, targetObjectType?: ObjectTypeBuilder): Set<EqualsFilterPluginFieldConfig> {
+    protected _getExtraFieldConfigs(context: FinalizeContext, name: string, targetObjectType?: ObjectTypeBuilder): Set<EqualsFilterPluginFieldConfig> {
 
         const fields = new Set<EqualsFilterPluginFieldConfig>();
 

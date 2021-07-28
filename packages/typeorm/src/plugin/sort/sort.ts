@@ -4,11 +4,11 @@ import { SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
-    BuildContext,
     camelize,
     ConstructorType,
     defaultSortPluginOptions as coreDefaultOptions,
     ensureInstantiated,
+    FinalizeContext,
     ObjectTypeBuilder,
     OptionalPromise,
     PluginError,
@@ -168,7 +168,7 @@ export class SortPlugin extends CoreSortPlugin implements Plugin {
         }
     }
 
-    protected _getExtraEnumValues(context: BuildContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): Set<string> {
+    protected _getExtraEnumValues(context: FinalizeContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): Set<string> {
 
         if(this._options.relations){
             return new Set<string>(this._options.relations.map(relation => relation.name));

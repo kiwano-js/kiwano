@@ -1,4 +1,4 @@
-import { defaults, isString }  from "lodash";
+import { defaults, isString } from "lodash";
 
 import { GraphQLString } from "graphql";
 
@@ -6,12 +6,13 @@ import { Brackets, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
-    BuildContext,
     ConstructorType,
     defaultSearchFilterPluginOptions as coreDefaultOptions,
     ensureInstantiated,
     FieldBuilder,
+    FieldBuilderInfo,
     FieldType,
+    FinalizeContext,
     ObjectTypeBuilder,
     OptionalPromise,
     PluginError,
@@ -266,11 +267,10 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    afterFinalizeField(builder: FieldBuilder, context: FinalizeContext, info: FieldBuilderInfo) {
 
-        super.beforeBuildField(builder, context);
+        super.afterFinalizeField(builder, context, info);
 
-        const info = builder.info();
         if(!info.list){
             return;
         }

@@ -1,12 +1,11 @@
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import { Plugin } from "../common";
-import { BuildContext } from "../../Builder";
+import { FinalizeContext } from "../../Builder";
 
 export class FirstAfterPaginationPlugin implements Plugin {
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    afterFinalizeField(builder: FieldBuilder, context: FinalizeContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }

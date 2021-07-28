@@ -1,8 +1,8 @@
 import { defaults } from "lodash";
 
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import { Plugin } from "../common";
-import { BuildContext } from "../../Builder";
+import { FinalizeContext } from "../../Builder";
 
 export interface SearchFilterPluginOptions {
     argumentName?: string,
@@ -21,9 +21,8 @@ export class SearchFilterPlugin implements Plugin {
         this._options = defaults(options || {}, defaultSearchFilterPluginOptions);
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    afterFinalizeField(builder: FieldBuilder, context: FinalizeContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }
