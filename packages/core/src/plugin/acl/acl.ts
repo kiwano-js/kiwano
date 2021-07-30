@@ -10,6 +10,7 @@ import {
 import FrameworkError from "../../error/FrameworkError";
 import { Plugin } from "../common";
 import { SchemaBuilder } from "../../schema";
+import { GraphQLSchema } from "graphql";
 
 export type AclRoleIdentifier = string | number;
 
@@ -216,6 +217,9 @@ export class AclPlugin implements Plugin {
 
         // Add middleware
         builder.use(graphQLAclMiddleware(this, null, this._options));
+    }
+
+    afterBuildSchema(builder: SchemaBuilder, schema: GraphQLSchema) {
 
         // Add rules
         for(let type of builder.getObjectTypes()){
