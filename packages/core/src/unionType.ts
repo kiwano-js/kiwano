@@ -61,7 +61,9 @@ export class UnionTypeBuilder extends Builder<GraphQLUnionType> {
 
     build(context: BuildContext): GraphQLUnionType {
 
-        this._executePluginsSync('beforeBuildUnionType', plugin => plugin.beforeBuildUnionType(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildUnionType', plugin => plugin.beforeBuildUnionType(this, context, info));
 
         // Resolve types
         const unionType = new GraphQLUnionType({
@@ -91,7 +93,7 @@ export class UnionTypeBuilder extends Builder<GraphQLUnionType> {
             }
         });
 
-        this._executePluginsSync('afterBuildUnionType', plugin => plugin.afterBuildUnionType(this, context, unionType));
+        this._executePluginsSync('afterBuildUnionType', plugin => plugin.afterBuildUnionType(this, context, info, unionType));
 
         return unionType;
     }

@@ -86,7 +86,9 @@ export class InputObjectTypeBuilder extends Builder<GraphQLInputType> {
 
     build(context: BuildContext): GraphQLInputObjectType {
 
-        this._executePluginsSync('beforeBuildInputObjectType', plugin => plugin.beforeBuildInputObjectType(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildInputObjectType', plugin => plugin.beforeBuildInputObjectType(this, context, info));
 
         const inputObjectType = new GraphQLInputObjectType({
             name: this.name,
@@ -107,7 +109,7 @@ export class InputObjectTypeBuilder extends Builder<GraphQLInputType> {
             }
         });
 
-        this._executePluginsSync('afterBuildInputObjectType', plugin => plugin.afterBuildInputObjectType(this, context, inputObjectType));
+        this._executePluginsSync('afterBuildInputObjectType', plugin => plugin.afterBuildInputObjectType(this, context, info, inputObjectType));
 
         return inputObjectType;
     }

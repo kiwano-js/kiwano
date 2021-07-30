@@ -12,6 +12,7 @@ import {
     ensureInstantiated,
     FieldBuilder,
     FieldType,
+    FieldBuilderInfo,
     ObjectTypeBuilder,
     OptionalPromise,
     PluginError,
@@ -266,11 +267,10 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    beforeBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo) {
 
-        super.beforeBuildField(builder, context);
+        super.beforeBuildField(builder, context, info);
 
-        const info = builder.info();
         if(!info.list){
             return;
         }

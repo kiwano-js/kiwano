@@ -177,7 +177,9 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             throw new BuilderError('Build: Field needs parent builder argument to be present');
         }
 
-        this._executePluginsSync('beforeBuildField', plugin => plugin.beforeBuildField(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildField', plugin => plugin.beforeBuildField(this, context, info));
 
         let builtArgs = {};
 
@@ -218,7 +220,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             resolve: resolver
         }
 
-        this._executePluginsSync('afterBuildField', plugin => plugin.afterBuildField(this, context, field));
+        this._executePluginsSync('afterBuildField', plugin => plugin.afterBuildField(this, context, info, field));
 
         return field;
     }

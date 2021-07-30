@@ -155,68 +155,68 @@ export class MultiPlugin implements Plugin {
         this.executeSync('afterBuildSchema', plugin => plugin.afterBuildSchema(builder, schema));
     }
 
-    beforeBuildObjectType(builder: ObjectTypeBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildObjectType', plugin => plugin.beforeBuildObjectType(builder, context));
+    beforeBuildObjectType(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo) {
+        this.executeSync('beforeBuildObjectType', plugin => plugin.beforeBuildObjectType(builder, context, info));
     }
 
-    afterBuildObjectType(builder: ObjectTypeBuilder, context: BuildContext, objectType: GraphQLObjectType) {
-        this.executeSync('afterBuildObjectType', plugin => plugin.afterBuildObjectType(builder, context, objectType));
+    afterBuildObjectType(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo, objectType: GraphQLObjectType) {
+        this.executeSync('afterBuildObjectType', plugin => plugin.afterBuildObjectType(builder, context, info, objectType));
     }
 
-    beforeBuildInputObjectType(builder: InputObjectTypeBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildInputObjectType', plugin => plugin.beforeBuildInputObjectType(builder, context));
+    beforeBuildInputObjectType(builder: InputObjectTypeBuilder, context: BuildContext, info: InputObjectTypeBuilderInfo) {
+        this.executeSync('beforeBuildInputObjectType', plugin => plugin.beforeBuildInputObjectType(builder, context, info));
     }
 
-    afterBuildInputObjectType(builder: InputObjectTypeBuilder, context: BuildContext, inputObjectType: GraphQLInputObjectType) {
-        this.executeSync('afterBuildInputObjectType', plugin => plugin.afterBuildInputObjectType(builder, context, inputObjectType));
+    afterBuildInputObjectType(builder: InputObjectTypeBuilder, context: BuildContext, info: InputObjectTypeBuilderInfo, inputObjectType: GraphQLInputObjectType) {
+        this.executeSync('afterBuildInputObjectType', plugin => plugin.afterBuildInputObjectType(builder, context, info, inputObjectType));
     }
 
-    beforeBuildEnumType(builder: EnumTypeBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildEnumType', plugin => plugin.beforeBuildEnumType(builder, context));
+    beforeBuildEnumType(builder: EnumTypeBuilder, context: BuildContext, info: EnumTypeBuilderInfo) {
+        this.executeSync('beforeBuildEnumType', plugin => plugin.beforeBuildEnumType(builder, context, info));
     }
 
-    afterBuildEnumType(builder: EnumTypeBuilder, context: BuildContext, enumType: GraphQLEnumType) {
-        this.executeSync('afterBuildEnumType', plugin => plugin.afterBuildEnumType(builder, context, enumType));
+    afterBuildEnumType(builder: EnumTypeBuilder, context: BuildContext, info: EnumTypeBuilderInfo, enumType: GraphQLEnumType) {
+        this.executeSync('afterBuildEnumType', plugin => plugin.afterBuildEnumType(builder, context, info, enumType));
     }
 
-    beforeBuildEnumValue(builder: EnumValueBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildEnumValue', plugin => plugin.beforeBuildEnumValue(builder, context));
+    beforeBuildEnumValue(builder: EnumValueBuilder, context: BuildContext, info: EnumValueBuilderInfo) {
+        this.executeSync('beforeBuildEnumValue', plugin => plugin.beforeBuildEnumValue(builder, context, info));
     }
 
-    afterBuildEnumValue(builder: EnumValueBuilder, context: BuildContext, enumValue: GraphQLEnumValueConfig) {
-        this.executeSync('afterBuildEnumValue', plugin => plugin.afterBuildEnumValue(builder, context, enumValue));
+    afterBuildEnumValue(builder: EnumValueBuilder, context: BuildContext, info: EnumValueBuilderInfo, enumValue: GraphQLEnumValueConfig) {
+        this.executeSync('afterBuildEnumValue', plugin => plugin.afterBuildEnumValue(builder, context, info, enumValue));
     }
 
-    beforeBuildUnionType(builder: UnionTypeBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildUnionType', plugin => plugin.beforeBuildUnionType(builder, context));
+    beforeBuildUnionType(builder: UnionTypeBuilder, context: BuildContext, info: UnionTypeBuilderInfo) {
+        this.executeSync('beforeBuildUnionType', plugin => plugin.beforeBuildUnionType(builder, context, info));
     }
 
-    afterBuildUnionType(builder: UnionTypeBuilder, context: BuildContext, unionType: GraphQLUnionType) {
-        this.executeSync('afterBuildUnionType', plugin => plugin.afterBuildUnionType(builder, context, unionType));
+    afterBuildUnionType(builder: UnionTypeBuilder, context: BuildContext, info: UnionTypeBuilderInfo, unionType: GraphQLUnionType) {
+        this.executeSync('afterBuildUnionType', plugin => plugin.afterBuildUnionType(builder, context, info, unionType));
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildField', plugin => plugin.beforeBuildField(builder, context));
+    beforeBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo) {
+        this.executeSync('beforeBuildField', plugin => plugin.beforeBuildField(builder, context, info));
     }
 
-    afterBuildField(builder: FieldBuilder, context: BuildContext, field: GraphQLFieldConfig<any, any>) {
-        this.executeSync('afterBuildField', plugin => plugin.afterBuildField(builder, context, field));
+    afterBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo, field: GraphQLFieldConfig<any, any>) {
+        this.executeSync('afterBuildField', plugin => plugin.afterBuildField(builder, context, info, field));
     }
 
-    beforeBuildInputField(builder: InputFieldBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildInputField', plugin => plugin.beforeBuildInputField(builder, context));
+    beforeBuildInputField(builder: InputFieldBuilder, context: BuildContext, info: InputFieldBuilderInfo) {
+        this.executeSync('beforeBuildInputField', plugin => plugin.beforeBuildInputField(builder, context, info));
     }
 
-    afterBuildInputField(builder: InputFieldBuilder, context: BuildContext, inputField: GraphQLInputFieldConfig) {
-        this.executeSync('afterBuildInputField', plugin => plugin.afterBuildInputField(builder, context, inputField));
+    afterBuildInputField(builder: InputFieldBuilder, context: BuildContext, info: InputFieldBuilderInfo, inputField: GraphQLInputFieldConfig) {
+        this.executeSync('afterBuildInputField', plugin => plugin.afterBuildInputField(builder, context, info, inputField));
     }
 
-    beforeBuildArgument(builder: ArgumentBuilder, context: BuildContext) {
-        this.executeSync('beforeBuildArgument', plugin => plugin.beforeBuildArgument(builder, context));
+    beforeBuildArgument(builder: ArgumentBuilder, context: BuildContext, info: ArgumentBuilderInfo) {
+        this.executeSync('beforeBuildArgument', plugin => plugin.beforeBuildArgument(builder, context, info));
     }
 
-    afterBuildArgument(builder: ArgumentBuilder, context: BuildContext, argument: GraphQLArgumentConfig) {
-        this.executeSync('afterBuildArgument', plugin => plugin.afterBuildArgument(builder, context, argument));
+    afterBuildArgument(builder: ArgumentBuilder, context: BuildContext, info: ArgumentBuilderInfo, argument: GraphQLArgumentConfig) {
+        this.executeSync('afterBuildArgument', plugin => plugin.afterBuildArgument(builder, context, info, argument));
     }
 }
 

@@ -57,7 +57,9 @@ export class EnumValueBuilder extends Builder<GraphQLEnumValueConfig> {
 
     build(context: BuildContext): GraphQLEnumValueConfig {
 
-        this._executePluginsSync('beforeBuildEnumValue', plugin => plugin.beforeBuildEnumValue(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildEnumValue', plugin => plugin.beforeBuildEnumValue(this, context, info));
 
         const enumValue = {
             value: this._value,
@@ -68,7 +70,7 @@ export class EnumValueBuilder extends Builder<GraphQLEnumValueConfig> {
             }
         };
 
-        this._executePluginsSync('afterBuildEnumValue', plugin => plugin.afterBuildEnumValue(this, context, enumValue));
+        this._executePluginsSync('afterBuildEnumValue', plugin => plugin.afterBuildEnumValue(this, context, info, enumValue));
 
         return enumValue;
     }

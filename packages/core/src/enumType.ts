@@ -104,7 +104,9 @@ export class EnumTypeBuilder extends Builder<GraphQLEnumType> {
 
     build(context: BuildContext): GraphQLEnumType {
 
-        this._executePluginsSync('beforeBuildEnumType', plugin => plugin.beforeBuildEnumType(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildEnumType', plugin => plugin.beforeBuildEnumType(this, context, info));
 
         let builtValues = {};
 
@@ -122,7 +124,7 @@ export class EnumTypeBuilder extends Builder<GraphQLEnumType> {
             }
         });
 
-        this._executePluginsSync('afterBuildEnumType', plugin => plugin.afterBuildEnumType(this, context, enumType));
+        this._executePluginsSync('afterBuildEnumType', plugin => plugin.afterBuildEnumType(this, context, info, enumType));
 
         return enumType;
     }

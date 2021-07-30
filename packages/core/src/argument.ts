@@ -105,7 +105,9 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
 
     build(context: BuildContext): GraphQLArgumentConfig {
 
-        this._executePluginsSync('beforeBuildArgument', plugin => plugin.beforeBuildArgument(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildArgument', plugin => plugin.beforeBuildArgument(this, context, info));
 
         let type = isString(this._type) ? context.getType(this._type) as GraphQLInputType : this._type;
 
@@ -131,7 +133,7 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
             }
         }
 
-        this._executePluginsSync('afterBuildArgument', plugin => plugin.afterBuildArgument(this, context, argument));
+        this._executePluginsSync('afterBuildArgument', plugin => plugin.afterBuildArgument(this, context, info, argument));
 
         return argument;
     }

@@ -1,6 +1,6 @@
 import { defaults } from "lodash";
 
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import inputObject, { InputObjectTypeBuilder } from "../../inputObjectType";
 import enumType, { EnumTypeBuilder } from "../../enumType";
 import { ObjectTypeBuilder } from "../../objectType";
@@ -101,9 +101,8 @@ export class SortPlugin implements Plugin {
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    beforeBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }

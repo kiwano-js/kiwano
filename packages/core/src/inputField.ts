@@ -105,7 +105,9 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
 
     build(context: BuildContext): GraphQLInputFieldConfig {
 
-        this._executePluginsSync('beforeBuildInputField', plugin => plugin.beforeBuildInputField(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildInputField', plugin => plugin.beforeBuildInputField(this, context, info));
 
         let type = isString(this._type) ? context.getType(this._type) as GraphQLInputType : this._type;
 
@@ -131,7 +133,7 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
             }
         }
 
-        this._executePluginsSync('afterBuildInputField', plugin => plugin.afterBuildInputField(this, context, inputField));
+        this._executePluginsSync('afterBuildInputField', plugin => plugin.afterBuildInputField(this, context, info, inputField));
 
         return inputField;
     }

@@ -1,4 +1,4 @@
-import { FieldBuilder } from "../../field";
+import { FieldBuilder, FieldBuilderInfo } from "../../field";
 import objectType, { ObjectTypeBuilder } from "../../objectType";
 import { Plugin } from "../common";
 import PluginError from "../PluginError";
@@ -18,9 +18,8 @@ export class ConnectionPaginationPlugin implements Plugin {
         return this;
     }
 
-    beforeBuildField(builder: FieldBuilder, context: BuildContext) {
+    beforeBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo) {
 
-        const info = builder.info();
         if(!info.list){
             return;
         }

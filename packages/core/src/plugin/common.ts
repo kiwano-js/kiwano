@@ -56,27 +56,27 @@ export interface Plugin {
     beforeBuildSchema?(builder: AbstractSchemaBuilder<any>);
     afterBuildSchema?(builder: AbstractSchemaBuilder<any>, schema: GraphQLSchema);
 
-    beforeBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext);
-    afterBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext, objectType: GraphQLObjectType);
+    beforeBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo);
+    afterBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo, objectType: GraphQLObjectType);
 
-    beforeBuildInputObjectType?(builder: InputObjectTypeBuilder, context: BuildContext);
-    afterBuildInputObjectType?(builder: InputObjectTypeBuilder, context: BuildContext, inputObjectType: GraphQLInputObjectType);
+    beforeBuildInputObjectType?(builder: InputObjectTypeBuilder, context: BuildContext, info: InputObjectTypeBuilderInfo);
+    afterBuildInputObjectType?(builder: InputObjectTypeBuilder, context: BuildContext, info: InputObjectTypeBuilderInfo, inputObjectType: GraphQLInputObjectType);
 
-    beforeBuildEnumType?(builder: EnumTypeBuilder, context: BuildContext);
-    afterBuildEnumType?(builder: EnumTypeBuilder, context: BuildContext, enumType: GraphQLEnumType);
+    beforeBuildEnumType?(builder: EnumTypeBuilder, context: BuildContext, info: EnumTypeBuilderInfo);
+    afterBuildEnumType?(builder: EnumTypeBuilder, context: BuildContext, info: EnumTypeBuilderInfo, enumType: GraphQLEnumType);
 
-    beforeBuildEnumValue?(builder: EnumValueBuilder, context: BuildContext);
-    afterBuildEnumValue?(builder: EnumValueBuilder, context: BuildContext, enumValue: GraphQLEnumValueConfig);
+    beforeBuildEnumValue?(builder: EnumValueBuilder, context: BuildContext, info: EnumValueBuilderInfo);
+    afterBuildEnumValue?(builder: EnumValueBuilder, context: BuildContext, info: EnumValueBuilderInfo, enumValue: GraphQLEnumValueConfig);
 
-    beforeBuildUnionType?(builder: UnionTypeBuilder, context: BuildContext);
-    afterBuildUnionType?(builder: UnionTypeBuilder, context: BuildContext, unionType: GraphQLUnionType);
+    beforeBuildUnionType?(builder: UnionTypeBuilder, context: BuildContext, info: UnionTypeBuilderInfo);
+    afterBuildUnionType?(builder: UnionTypeBuilder, context: BuildContext, info: UnionTypeBuilderInfo, unionType: GraphQLUnionType);
 
-    beforeBuildField?(builder: FieldBuilder, context: BuildContext);
-    afterBuildField?(builder: FieldBuilder, context: BuildContext, field: GraphQLFieldConfig<any, any>);
+    beforeBuildField?(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo);
+    afterBuildField?(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo, field: GraphQLFieldConfig<any, any>);
 
-    beforeBuildInputField?(builder: InputFieldBuilder, context: BuildContext);
-    afterBuildInputField?(builder: InputFieldBuilder, context: BuildContext, inputField: GraphQLInputFieldConfig);
+    beforeBuildInputField?(builder: InputFieldBuilder, context: BuildContext, info: InputFieldBuilderInfo);
+    afterBuildInputField?(builder: InputFieldBuilder, context: BuildContext, info: InputFieldBuilderInfo, inputField: GraphQLInputFieldConfig);
 
-    beforeBuildArgument?(builder: ArgumentBuilder, context: BuildContext);
-    afterBuildArgument?(builder: ArgumentBuilder, context: BuildContext, argument: GraphQLArgumentConfig);
+    beforeBuildArgument?(builder: ArgumentBuilder, context: BuildContext, info: ArgumentBuilderInfo);
+    afterBuildArgument?(builder: ArgumentBuilder, context: BuildContext, info: ArgumentBuilderInfo, argument: GraphQLArgumentConfig);
 }

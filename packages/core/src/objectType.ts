@@ -116,7 +116,9 @@ export class ObjectTypeBuilder extends Builder<GraphQLObjectType> {
 
     build(context: BuildContext): GraphQLObjectType {
 
-        this._executePluginsSync('beforeBuildObjectType', plugin => plugin.beforeBuildObjectType(this, context));
+        const info = this.info();
+
+        this._executePluginsSync('beforeBuildObjectType', plugin => plugin.beforeBuildObjectType(this, context, info));
 
         const objectType = new GraphQLObjectType({
             name: this.name,
@@ -139,7 +141,7 @@ export class ObjectTypeBuilder extends Builder<GraphQLObjectType> {
             }
         });
 
-        this._executePluginsSync('afterBuildObjectType', plugin => plugin.afterBuildObjectType(this, context, objectType));
+        this._executePluginsSync('afterBuildObjectType', plugin => plugin.afterBuildObjectType(this, context, info, objectType));
 
         return objectType;
     }
