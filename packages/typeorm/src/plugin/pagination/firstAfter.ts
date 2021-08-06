@@ -26,7 +26,7 @@ export class FirstAfterPaginationPluginHooks implements IFirstAfterPaginationPlu
         }
     }
 
-    $transformRelationManyResult(relation: string, result: any, originalResult: object[], info: RelationResolverInfo<any>): OptionalPromise<Optional<any>> {
+    $transformRelationManyResult(relation: string, result: any, originalResult: any[], info: RelationResolverInfo<any>): OptionalPromise<Optional<any>> {
 
         const first = info.args.first;
         const after = info.args.after;

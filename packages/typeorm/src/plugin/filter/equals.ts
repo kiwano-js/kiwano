@@ -4,6 +4,7 @@ import { Brackets, SelectQueryBuilder } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
+    AnyObject,
     BuildContext,
     camelize,
     ConstructorType,
@@ -79,7 +80,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
         }
     }
 
-    applyFilter(builder: SelectQueryBuilder<any>, filter: object, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
+    applyFilter(builder: SelectQueryBuilder<any>, filter: AnyObject, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
 
         for(let key of Object.keys(filter)){
 
@@ -95,7 +96,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
         }
     }
 
-    addCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any | any[]>, filter: object, metadata: EntityMetadata){
+    addCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any | any[]>, filter: AnyObject, metadata: EntityMetadata){
 
         if(isArray(config.value)){
 
@@ -108,7 +109,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
         }
     }
 
-    addSingleCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any>, filter: object, metadata: EntityMetadata){
+    addSingleCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any>, filter: AnyObject, metadata: EntityMetadata){
 
         const paramName = `filterValue_${config.key}`;
         let whereClause = null;
@@ -125,7 +126,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
         builder.andWhere(whereClause, { [paramName]: config.value });
     }
 
-    addMultiCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any[]>, filter: object, metadata: EntityMetadata){
+    addMultiCondition(builder: SelectQueryBuilder<any>, config: FilterFieldConfig<any[]>, filter: AnyObject, metadata: EntityMetadata){
 
         let joinAlias = null;
 
@@ -178,8 +179,8 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
         return `${alias}.${field} = :${paramName}`;
     }
 
-    beforeApplyFilter(builder: SelectQueryBuilder<any>, filter: object, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
-    afterApplyFilter(builder: SelectQueryBuilder<any>, filter: object, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
+    beforeApplyFilter(builder: SelectQueryBuilder<any>, filter: AnyObject, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
+    afterApplyFilter(builder: SelectQueryBuilder<any>, filter: AnyObject, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
 }
 
 export class EqualsFilterPlugin extends CoreEqualsFilterPlugin implements Plugin {

@@ -18,7 +18,7 @@ import {
 export interface EntityFieldInfo {
     fieldInfo: FieldBuilderInfo
     entityFieldType: EntityFieldType
-    resolverOptions: object
+    resolverOptions: AnyObject
 }
 
 export interface InputResolverInfo<SourceType> extends ResolverInfo<SourceType> {

@@ -27,7 +27,7 @@ export class ConnectionPaginationPluginHooks implements IConnectionPaginationPlu
         }
     }
 
-    $transformRelationManyResult(relation: string, result: any, originalResult: object[], info: RelationResolverInfo<any>): OptionalPromise<Optional<any>> {
+    $transformRelationManyResult(relation: string, result: any, originalResult: any[], info: RelationResolverInfo<any>): OptionalPromise<Optional<any>> {
 
         if(result && originalResult && isArray(result)){
 
