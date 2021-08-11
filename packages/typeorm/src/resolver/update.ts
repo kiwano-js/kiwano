@@ -50,11 +50,12 @@ export interface UpdateResolverBaseHooks<ModelType, SourceType> extends ModelInp
     $beforeUpdateResolver?(info: UpdateResolverInfo<SourceType>): OptionalPromise
     $afterUpdateResolver?(info: UpdateResolverInfo<SourceType>): OptionalPromise
 
-    $validateUpdateInput?(input: AnyObject, info: UpdateResolverInfo<SourceType>): OptionalPromise<boolean>
+    $validateUpdateInput?(input: AnyObject, model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise<boolean>
     $updateAllowed?(model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise<boolean>
 
     $onUpdateNotAllowed?(model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise
     $onUpdateNotFound?(info: UpdateResolverInfo<SourceType>): OptionalPromise
+    $onUpdateInputInvalid?(model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise
     $onUpdateFailed?(error: Error, model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise
 
     $transformUpdateInput?(input: AnyObject, model: ModelType, originalInput: AnyObject, info: UpdateResolverInfo<SourceType>): OptionalPromise<Optional<AnyObject>>
@@ -140,6 +141,25 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
 
             await executeHooks('$onUpdateNotFound', hooks => hooks.$onUpdateNotFound(resolverInfo));
             throwModelNotFound(modelAlias, id);
+        }
+
+        // Validate input
+        let inputValid = true;
+
+        const inputValidResults = await executeHooks('$validateInput', hooks => hooks.$validateInput(input, resolverInfo));
+        if(inputValidResults.indexOf(false) >= 0){
+            inputValid = false;
+        }
+
+        const updateInputValidResults = await executeHooks('$validateUpdateInput', hooks => hooks.$validateUpdateInput(input, model, resolverInfo));
+        if(updateInputValidResults.indexOf(false) >= 0){
+            inputValid = false;
+        }
+
+        if(!inputValid){
+
+            await executeHooks('$onUpdateInputInvalid', hooks => hooks.$onUpdateInputInvalid(model, resolverInfo));
+            throw new InvalidInputError('Invalid input provided', { input });
         }
 
         // Check access
