@@ -434,8 +434,16 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             objectType.allow(...Array.from(this._allowedRoles)).deny(...Array.from(this._deniedRoles));
         }
 
-        this._queryObject.allow(...Array.from(this._allowedQueryRoles)).deny(...Array.from(this._deniedQueryRoles));
-        this._mutationObject?.allow(...Array.from(this._allowedMutationRoles)).deny(...Array.from(this._deniedMutationRoles));
+        for(let queryField of this._queryObject.info().fields){
+            queryField.allow(...Array.from(this._allowedQueryRoles)).deny(...Array.from(this._deniedQueryRoles));
+        }
+
+        if(this._mutationObject){
+
+            for(let mutationField of this._mutationObject.info().fields){
+                mutationField.allow(...Array.from(this._allowedMutationRoles)).deny(...Array.from(this._deniedMutationRoles));
+            }
+        }
 
         // Finalize types
         const finalizeContext = new FinalizeContext(this, resolvedRootSchema);
