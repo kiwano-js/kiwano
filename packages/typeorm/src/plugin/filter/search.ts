@@ -23,6 +23,8 @@ import {
 import { addRelationJoin, Plugin } from "../common";
 import { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
 
+export const searchPluginOriginalTypeExtensionName = "$searchPluginOriginalType";
+
 export enum SearchMode {
     CONTAINS, STARTS, ENDS
 }
@@ -70,7 +72,9 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         if(searchQuery){
 
             const entityMetaData = info.options.connection.getMetadata(info.options.model);
-            const typeName = info.options.fieldInfo.type;
+            const fieldInfo = info.options.fieldInfo;
+            const typeName = fieldInfo.extensions.get(searchPluginOriginalTypeExtensionName) || fieldInfo.type;
+
             if(!isString(typeName)){
                 return;
             }
@@ -93,10 +97,11 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         if(searchQuery){
 
             const metadata = info.options.connection.getMetadata(info.options.model);
+            const fieldInfo = info.options.fieldInfo;
             const relationMeta = metadata.findRelationWithPropertyPath(relation);
             const entityMetaData = relationMeta.inverseEntityMetadata;
 
-            const typeName = info.options.fieldInfo.type;
+            const typeName = fieldInfo.extensions.get(searchPluginOriginalTypeExtensionName) || fieldInfo.type;
             if(!isString(typeName)){
                 return;
             }
@@ -323,6 +328,8 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         }
 
         this._typeFields.set(typeName, typeFields);
+
+        builder.extension(searchPluginOriginalTypeExtensionName, typeName);
     }
 
     getAllResolverHooks(): AllResolverBaseHooks<any, any>[] {
