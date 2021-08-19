@@ -33,5 +33,6 @@
   },
   "dependencies": {
     "@kiwano/core": "^0.0.2"
-  }
+  },
+  "gitHead": "e35351892f1154f8b61846ef42f6485c37d1ab58"
 }
