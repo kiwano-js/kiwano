@@ -64,8 +64,8 @@ When a schema or schema member is built into their GraphQL counterpart, Kiwano w
 These contain an array with the roles that are specified in the builder.
 In the example above, the mutation field will contain the value `['admin']` for the `allowedRoles` extension.
 
-By default, you are responsible to enforce the access rules in your resolvers or using middleware. 
-The Kiwano builders only enable you to configure access rules, but don't do anything to check whether a user has access to a particular resolver.
+By default, you are responsible to enforce the access rules in your resolvers or by using middleware. 
+The Kiwano builders only enable you to configure access rules, but they don't do anything to check whether a user has access to a particular resolver.
 
 However, Kiwano also provides an [Access control (ACL)](plugins/acl.md) plugin that will enforce access rules automatically for you.
 
@@ -96,18 +96,22 @@ There is no limit to the amount of merged schemas: you can merge schema A and B 
 In this example, schema D will contain all elements from schema A, B and C combined.
 
 ### Plug-ins & middleware
-Plug-ins enrich schemas, elements or resolvers with certain functionality. 
+**Plug-ins** enrich schemas, elements or resolvers with certain functionality. 
 When adding the `sortPlugin` to a query-field for example, a sorting-argument will be added to the field automatically. 
 When using the Kiwano TypeORM package, plug-ins even enrich resolvers to automatically apply the sorting itself (in this example).
 
-Middelware enables you to execute a function before any field is being resolved.
+**Middleware** enables you to execute a function before any field is being resolved.
 The external package [graphql-middleware](https://github.com/maticzav/graphql-middleware) is used to facilitate this, please see their documentation for more information.
 
 Both plug-ins and middleware can be assigned to any element (including schemas itself) using the `use()` method:
 
 ```typescript
 schema
+    
+    // Plugin
     .use(sortPlugin())
+    
+    // Middleware
     .use(async (resolve, root, args, context, info) => {
         console.log('Before resolve')
         const result = await resolve(root, args, context, info)
@@ -119,17 +123,66 @@ schema
 > See the [Using plug-ins](plugins/overview.md) section for more details about plug-ins.
 
 ## Instantiation
-Builder functions that return Builder class etc
+All elements in Kiwano are provided in two ways: **factory functions** and **classes**.
+To create an object-type for example you can use both the factory function `objectType()` or the class `new ObjectTypeBuilder()`. 
+We recommend you to use the factory functions, because they offer a cleaner and less clumsy way to define you schema.
+When you want to extend a Kiwano element however, you can just subclass the provided classes (`ObjectTypeBuilder` in this example).
 
 ## Providing elements
-
-### Configurators
+Most elements can be added to you schema or to another element in two ways: using configurators or by passing the element directly.
+Some elements however, like plug-ins, can only be added directly.
 
 ### Pass elements directly
+The most simple way is to create an element, and provide it to another element, like your schema. 
+You just instantiate the element using the factory method or class, and pass is to the desired element.
+To add an object-type to your schema for example, create it using the `objectType()` factory method that Kiwano provides, and add it to your schema using the `object()` method on `schema`:
 
-## Naming
-> Automatic naming is only supported for `entitySchema` or derivatives like `modelSchema`
+```typescript
+import { schema, objectType, field } from '@kiwano/core'
 
-### Automatic
+schema()
+    .object(objectType('User')
+        .field(field('email', 'String')
+            .description('E-mail address of the user')
+        )
+    )
+```
 
-### Manual
+### Configurators
+By using configurators, you let Kiwano create the element for you.
+Because the `object()` method on your schema always expects an `objectType` for example, Kiwano knows which element to create and add to the schema.
+Your job is just to configure the element that Kiwano created for you.
+The main advantage of this method is that you don't have to import every element, so you can just focus on configuring the element.
+
+You can use the same methods to both pass an element directly or to use a configurator.
+The difference is that instead of passing the element, you pass the desired name of the element. 
+In case of an object-type, the second argument can be a **configurator function**. For fields, you should provide the return-type as well.
+
+The configurator function you can provide, receives the created element as an argument. 
+This enables you to change the created element before it's added to the schema.
+
+```typescript
+import { schema } from '@kiwano/core'
+
+schema()
+    .object('User', objectType => objectType
+        .field('email', 'String', field => field
+            .description('E-mail address of the user')
+        )
+    )
+```
+
+To make this more readable, you could decide to replace the argument names with a placeholder like `_`:
+
+```typescript
+import { schema } from '@kiwano/core'
+
+schema()
+    .object('User', _ => _
+        .field('email', 'String', _ => _
+            .description('E-mail address of the user')
+        )
+    )
+```
+
+Because this is simpler to use and looks cleaner, we recommend you to use configurators.
