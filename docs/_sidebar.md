@@ -3,9 +3,6 @@
   - [Concepts](basics/concepts.md)
   - [Schema](basics/schema.md)
   - [Object types & fields](basics/types.md)
-  - [Enums](basics/enums.md)
-  - [Resolvers](basics/resolvers.md)
-  - [Examples](basics/examples.md)
     
 - Entity Schema
   - [Entity Schema](entity-schema/entity-schema.md)
@@ -23,4 +20,3 @@
   - [Model schema](typeorm/model-schema.md)
   - [Resolvers](typeorm/resolvers.md)
   - [Plug-ins](typeorm/plugins.md)
-  - [Examples](typeorm/examples.md)

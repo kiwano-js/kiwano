@@ -39,7 +39,7 @@ Kiwano supports the following schema members:
 - Input object type and input fields
 - Union type
 
-> See [Object types & fields](basics/types.md) and [Enums](basics/enums.md) for more details about schema members.
+> See [Object types & fields](basics/types.md) and [Schema](basics/schema.md) for more details about schema members.
 
 ### Resolvers
 GraphQL enables you to assign a resolver to each field, this resolver is executed when the user queries the corresponding field, and should return the value for the field.
@@ -48,7 +48,7 @@ With Kiwano you can assign a resolver function to a field, using the `resolver()
 However, Kiwano additionally enables you to bundle resolvers into an object or a resolver-class.
 You can either bundle all schema resolvers, or choose to bundle query-resolvers, mutation-resolvers and object-resolvers.
 
-> See the [Resolvers](basics/resolvers.md) section for more details about resolvers.
+> See the [Schema](basics/schema.md) section for more details about resolvers.
 
 ### Access rules
 Schemas, object types and field may contain access rules. 

@@ -101,15 +101,15 @@ export default function(){
 }
 ```
 
-> The `schema` function returns a builder which you can use to add members to the schema. Almost every method returns the builder itself, enabling you to chain. 
-> Note that the builder is not a GraphQL schema for use in other libraries yet, use the `build` function to generate the GraphQL schema for your configured builder. 
-> The use of this `build` method explained later.
+> The `schema()` function returns a builder which you can use to add members to the schema. Almost every method returns the builder itself, enabling you to chain. 
+> Note that the builder is not a GraphQL schema for use in other libraries yet, use the `build()` method to generate the GraphQL schema for your configured builder. 
+> The use of this `build()` method explained later.
 
 > Note that we export a function which returns the schema builder instead of directly exporting the builder.
 > This is a Javascript/Typescript convention that enables us to create the schema when we want to, instead of immediately during import.
 
 You may have noticed the weird looking syntax `_ => _`, this is to improve readability. Most methods on the schema allow you to pass a configurator function. 
-When you call the `object` method for example, Kiwano creates as object-type builder with the given name and return type. 
+When you call the `object()` method for example, Kiwano creates as object-type builder with the given name and return type. 
 This object-type builder is passed to the optional configurator function we provided, which enables you to further configure the object-type. 
 You are free to give this argument any name you want, so you could also write like: `schema.query('users', 'User', field => field.list())`. 
 
@@ -253,7 +253,7 @@ export default function() {
 ```
 
 By using an **entity schema**, fields like **all** or **find** (`users` or `user`) can be automatically generated.
-The only thing you need to do is to provide the name for the entity as argument in the `entitySchema` function, and configure the automatically created entity object type (using the `entity` method).
+The only thing you need to do is to provide the name for the entity as argument in the `entitySchema()` function, and configure the automatically created entity object type (using the `entity()` method).
 Now Kiwano can create and configure fields for you, and automatically generate accompanying types like `CreateProjectInput`.
 Entity schema extends from the regular schema, so you can use all features of the regular schema as well.
 
@@ -443,14 +443,14 @@ Read the [TypeORM resolvers](typeorm/resolvers.md) documentation for more inform
 
 ### 7. Build schema & run server
 Now our schema is finished, we can build it. 
-Every schema provides a `build` method, which turns the Kiwano schema builder into an official GraphQL schema.
+Every schema provides a `build()` method, which turns the Kiwano schema builder into an official GraphQL schema.
 This GraphQL schema can be used to pass to any GraphQL runtime library.
 
 First, let's build our schema. 
 Remember that we created the **schema.ts** file, which returns a schema that's merged with all sub-schemas.
 We only have to build this main schema, because it automatically builds any merged sub-schemas as well.
 
-> Note that the build function returns a Promise, so we'll have to wait for it to be finished.
+> Note that the build method returns a Promise, so we'll have to wait for it to be finished.
 
 **Express GraphQL**
 ```typescript
