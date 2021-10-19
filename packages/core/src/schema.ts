@@ -1,6 +1,6 @@
 import { isFunction, clone, compact, isString, isArray, isObjectLike } from 'lodash'
 
-import { mergeSchemas } from "@graphql-tools/merge";
+import { mergeSchemas } from "@graphql-tools/schema";
 import { applyMiddleware } from "graphql-middleware";
 
 import { GraphQLFieldResolver } from "graphql/type/definition";
