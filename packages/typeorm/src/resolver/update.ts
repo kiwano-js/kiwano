@@ -134,7 +134,7 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
         await executeHooks('$beforeUpdateResolver', hooks => hooks.$beforeUpdateResolver(resolverInfo));
 
         // Fetch data
-        const model = await fetchModel(false);
+        let model = await fetchModel(false);
 
         // Check not found
         if(!model){
@@ -207,6 +207,8 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 let success;
                 let updatedData = null;
 
+                const transactionRepository = transaction.getRepository(options.model);
+
                 if(hooks?.$updateModel){
 
                     const updateResult = await hooks.$updateModel(model, input, transaction, resolverInfo);
@@ -225,7 +227,6 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 }
                 else {
 
-                    const transactionRepository = transaction.getRepository(options.model);
                     const safeUpdateData = pickBy(input, (_, key) => !!repository.metadata.findColumnWithPropertyName(key));
 
                     let updateQueryBuilder = transactionRepository.createQueryBuilder().update()
@@ -243,6 +244,9 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 if(!success){
                     throw new DataError(`Unable to update ${modelAlias} with ID "${id}"`);
                 }
+
+                // Refetch model after update
+                model = await transactionRepository.findOneOrFail(transactionRepository.getId(model));
 
                 await executeHooks('$afterUpdateModel', hooks => hooks.$afterUpdateModel(model, transaction, resolverInfo));
                 await executeHooks('$afterSave', hooks => hooks.$afterSave(updatedData, transaction, resolverInfo));
