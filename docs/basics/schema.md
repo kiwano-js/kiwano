@@ -201,6 +201,6 @@ The default schema however requires you to pass element names explicitly, so the
 `.naming(strategy)`
 
 Attaches a naming strategy to the schema. 
-This strategy is automatically added to all merge sub-schemas, so it only has to be provided once in the root-schema.
+This strategy is automatically added to all merged sub-schemas as well, so you just have to provide it once in the root-schema.
 
 > See [Naming](entity-schema/naming.md) for more information about naming strategies
