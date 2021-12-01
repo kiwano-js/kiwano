@@ -30,7 +30,7 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
 
                     // Return default result when available; automatic resolver is only executed when value is not found in source
                     const defaultResult = defaultFieldResolver(source, args, context, info);
-                    if(defaultResult){
+                    if(defaultResult && !(defaultResult instanceof Promise)){
                         return defaultResult;
                     }
 
