@@ -40,6 +40,14 @@ export class UpdateInputObjectTypeBuilder extends InputObjectTypeBuilder {
                 inputField.nonNull();
             }
 
+            if(fieldInfo.list){
+                inputField.list();
+            }
+
+            if(fieldInfo.nonNullList){
+                inputField.nonNullList();
+            }
+
             this.field(inputField);
         }
     }

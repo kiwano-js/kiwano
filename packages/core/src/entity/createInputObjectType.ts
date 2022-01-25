@@ -36,8 +36,17 @@ export class CreateInputObjectTypeBuilder extends InputObjectTypeBuilder {
             }
 
             const inputField = new InputFieldBuilder(fieldInfo.name, fieldInfo.type as InputFieldType);
+
             if(fieldInfo.nonNull){
                 inputField.nonNull();
+            }
+
+            if(fieldInfo.list){
+                inputField.list();
+            }
+
+            if(fieldInfo.nonNullList){
+                inputField.nonNullList();
             }
 
             this.field(inputField);
