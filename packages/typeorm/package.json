@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/typeorm",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@kiwano/core": "^0.0.6",
+    "@kiwano/core": "^0.0.7",
     "@types/lodash": "^4.14.168",
     "rimraf": "^3.0.2",
     "ts-node": "9.1.1",
