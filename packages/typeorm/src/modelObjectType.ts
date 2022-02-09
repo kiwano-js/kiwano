@@ -80,8 +80,10 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
         const relations = this._metadata.relations;
 
         const typeMapper = this._options.typeMapper;
+
         const queryRunner = this._options.connection.createQueryRunner();
         const table = await queryRunner.getTable(this._metadata.tablePath);
+        await queryRunner.release();
 
         const joinColumns = flatten(relations.map(relation => relation.joinColumns));
         const joinColumnNames = joinColumns.map(column => column.propertyName);
