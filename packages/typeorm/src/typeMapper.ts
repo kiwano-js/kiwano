@@ -1,7 +1,7 @@
 import { isString } from 'lodash'
 
 import { ColumnType } from "typeorm";
-import { JSONResolver, UUIDResolver, ByteResolver, DateTimeResolver, DateResolver, TimeResolver } from "graphql-scalars";
+import { JSONResolver, UUIDResolver, ByteResolver, DateTimeResolver, DateResolver, LocalTimeResolver } from "graphql-scalars";
 
 import { ColumnTypeMapperInfo, ColumnTypeMapperResult } from "./common";
 
@@ -66,7 +66,7 @@ export function typeMapper(info: ColumnTypeMapperInfo): ColumnTypeMapperResult {
         result.type = DateTimeResolver;
     }
     else if(timeTypes.indexOf(type) >= 0){
-        result.type = TimeResolver;
+        result.type = LocalTimeResolver;
     }
     else if(type === 'date'){
         result.type = DateResolver;
