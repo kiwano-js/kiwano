@@ -32,7 +32,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@kiwano/core": "^0.0.8"
+    "@kiwano/core": "^0.0.9"
   },
   "gitHead": "8c06d628d7cfaddff14bbd8fc08fefb1d9be0118"
 }
