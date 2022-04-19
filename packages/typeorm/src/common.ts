@@ -1,4 +1,4 @@
-import { Connection } from "typeorm";
+import { DataSource } from "typeorm";
 import { EntityTarget } from "typeorm/common/EntityTarget";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { RelationMetadata } from "typeorm/metadata/RelationMetadata";
@@ -21,8 +21,8 @@ export type ColumnTypeMapper = (ColumnTypeMapperInfo) => ColumnTypeMapperResult;
 export type ModelType = EntityTarget<any>;
 
 export interface ModelBuilderOptions<NT> {
+    dataSource: DataSource
     name?: NT
-    connection?: Connection,
     typeMapper?: ColumnTypeMapper
 }
 

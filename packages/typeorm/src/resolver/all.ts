@@ -1,7 +1,7 @@
 import { compact, last, flatten, clone } from 'lodash'
 
 import { GraphQLResolveInfo } from "graphql";
-import { Connection, SelectQueryBuilder } from "typeorm";
+import { DataSource, SelectQueryBuilder } from "typeorm";
 
 import { AnyObject, FieldBuilderInfo, ForbiddenError, Optional, OptionalPromise, ResolverInfo } from "@kiwano/core";
 
@@ -10,7 +10,7 @@ import { hooksExecutor, ModelQueryResolverHooks } from "./common";
 import { Plugin } from "../plugin";
 
 export interface AllResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     fieldInfo: FieldBuilderInfo
     plugins?: Plugin[]
@@ -58,7 +58,7 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
         const executeHooks = hooksExecutor(hookCollections);
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const modelAlias = repository.metadata.name;
 
         // Create helpers

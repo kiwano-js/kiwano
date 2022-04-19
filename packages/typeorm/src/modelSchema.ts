@@ -1,3 +1,5 @@
+import { DataSource } from "typeorm";
+
 import {
     AbstractEntitySchemaBuilder,
     BuilderName,
@@ -33,14 +35,13 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
     protected _options: ModelSchemaBuilderOptions;
     protected _model: ModelType;
 
-    constructor(model: ModelType);
-    constructor(model: ModelType, name: string);
+    constructor(model: ModelType, dataSource: DataSource);
     constructor(model: ModelType, options: ModelSchemaBuilderOptions);
-    constructor(model: ModelType, optionsOrName?: ModelSchemaBuilderOptions | string);
-    constructor(model: ModelType, optionsOrName?: ModelSchemaBuilderOptions | string){
+    constructor(model: ModelType, optionsOrDataSource?: ModelSchemaBuilderOptions | DataSource);
+    constructor(model: ModelType, optionsOrDataSource?: ModelSchemaBuilderOptions | DataSource){
 
-        let options = resolveModelBuilderOptions<ModelSchemaBuilderOptions, string>(optionsOrName);
-        const metadata = options.connection.getMetadata(model);
+        let options = resolveModelBuilderOptions<ModelSchemaBuilderOptions, string>(optionsOrDataSource);
+        const metadata = options.dataSource.getMetadata(model);
         const resolvedName = options.name ?? metadata.name;
 
         super(resolvedName);
@@ -59,7 +60,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
 
         return new ModelObjectTypeBuilder(this._model, {
             name,
-            connection: this._options.connection
+            dataSource: this._options.dataSource
         });
     }
 
@@ -105,7 +106,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         if(this._findField){
 
             this._findField.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._findField.info(),
                 idArgument: this.namingStrategy.findFieldIdArgument(this.name),
@@ -116,7 +117,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         if(this._allField){
 
             this._allField.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._allField.info(),
                 plugins: this._allField.info().plugins
@@ -126,7 +127,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         if(this._createField){
 
             this._createField.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._createField.info(),
                 inputArgument: this.namingStrategy.createFieldInputArgument(this.name),
@@ -137,7 +138,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         if(this._updateField){
 
             this._updateField.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._updateField.info(),
                 inputArgument: this.namingStrategy.updateFieldInputArgument(this.name),
@@ -148,7 +149,7 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         if(this._deleteField){
 
             this._deleteField.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._deleteField.info(),
                 idArgument: this.namingStrategy.deleteFieldIdArgument(this.name),
@@ -158,13 +159,12 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
     }
 }
 
-function modelSchema(model: ModelType): ModelSchemaBuilder;
-function modelSchema(model: ModelType, name: string): ModelSchemaBuilder;
+function modelSchema(model: ModelType, dataSource: DataSource): ModelSchemaBuilder;
 function modelSchema(model: ModelType, options: ModelSchemaBuilderOptions): ModelSchemaBuilder;
-function modelSchema(model: ModelType, optionsOrName?: ModelSchemaBuilderOptions | string): ModelSchemaBuilder
-function modelSchema(model: ModelType, optionsOrName?: ModelSchemaBuilderOptions | string): ModelSchemaBuilder {
+function modelSchema(model: ModelType, optionsOrDataSource?: ModelSchemaBuilderOptions | DataSource): ModelSchemaBuilder
+function modelSchema(model: ModelType, optionsOrDataSource?: ModelSchemaBuilderOptions | DataSource): ModelSchemaBuilder {
 
-    return new ModelSchemaBuilder(model, optionsOrName);
+    return new ModelSchemaBuilder(model, optionsOrDataSource);
 }
 
 export default modelSchema;

@@ -71,7 +71,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
         if(searchQuery){
 
-            const entityMetaData = info.options.connection.getMetadata(info.options.model);
+            const entityMetaData = info.options.dataSource.getMetadata(info.options.model);
             const fieldInfo = info.options.fieldInfo;
             const typeName = fieldInfo.extensions.get(searchPluginOriginalTypeExtensionName) || fieldInfo.type;
 
@@ -96,7 +96,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
         if(searchQuery){
 
-            const metadata = info.options.connection.getMetadata(info.options.model);
+            const metadata = info.options.dataSource.getMetadata(info.options.model);
             const fieldInfo = info.options.fieldInfo;
             const relationMeta = metadata.findRelationWithPropertyPath(relation);
             const entityMetaData = relationMeta.inverseEntityMetadata;

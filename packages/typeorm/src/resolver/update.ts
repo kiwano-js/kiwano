@@ -2,7 +2,7 @@ import { compact, last, assign, pickBy, flatten, cloneDeep, clone } from 'lodash
 
 import { GraphQLResolveInfo } from "graphql";
 
-import { Connection, EntityManager, UpdateQueryBuilder } from "typeorm";
+import { DataSource, EntityManager, UpdateQueryBuilder } from "typeorm";
 
 import {
     AnyObject,
@@ -27,7 +27,7 @@ import {
 
 
 export interface UpdateResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     inputArgument: string
     fieldInfo: FieldBuilderInfo
@@ -85,7 +85,7 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
         const executeHooks = hooksExecutor(hookCollections);
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const modelAlias = repository.metadata.name;
         const modelPrimaryColumn = getModelPrimaryColumn(repository.metadata);
 
@@ -199,7 +199,7 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
         // Update
         try {
 
-            await options.connection.transaction(async transaction => {
+            await options.dataSource.transaction(async transaction => {
 
                 await executeHooks('$beforeSave', hooks => hooks.$beforeSave(transaction, resolverInfo));
                 await executeHooks('$beforeUpdateModel', hooks => hooks.$beforeUpdateModel(model, transaction, resolverInfo));

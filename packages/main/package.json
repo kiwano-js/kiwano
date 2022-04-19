@@ -1,6 +1,6 @@
 {
   "name": "kiwano",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "url": "https://github.com/kiwano-js/kiwano/issues"
   },
   "engines": {
-    "node": ">= 10.13.0"
+    "node": ">= 14.0.0"
   },
   "homepage": "https://github.com/kiwano-js/kiwano#readme",
   "publishConfig": {
@@ -28,11 +28,11 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "ts-node": "9.1.1",
-    "typescript": "^4.2.3"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   },
   "dependencies": {
-    "@kiwano/core": "^0.0.9"
+    "@kiwano/core": "^0.1.0"
   },
   "gitHead": "8c06d628d7cfaddff14bbd8fc08fefb1d9be0118"
 }

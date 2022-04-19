@@ -2,7 +2,7 @@ import { compact, flatten } from 'lodash'
 
 import { GraphQLResolveInfo } from "graphql";
 
-import { Connection, DeleteQueryBuilder, EntityManager } from "typeorm";
+import { DataSource, DeleteQueryBuilder, EntityManager } from "typeorm";
 import { SoftDeleteQueryBuilder } from "typeorm/query-builder/SoftDeleteQueryBuilder";
 
 import {
@@ -28,7 +28,7 @@ import {
 
 
 export interface DeleteResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     idArgument: string
     fieldInfo: FieldBuilderInfo
@@ -87,7 +87,7 @@ export function deleteResolver<ModelType, SourceType=any>(options: DeleteResolve
         await executeHooks('$beforeDeleteResolver', hooks => hooks.$beforeDeleteResolver(resolverInfo));
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const modelAlias = repository.metadata.name;
         const modelPrimaryColumn = getModelPrimaryColumn(repository.metadata);
 
@@ -151,7 +151,7 @@ export function deleteResolver<ModelType, SourceType=any>(options: DeleteResolve
         // Delete
         try {
 
-            await options.connection.transaction(async transaction => {
+            await options.dataSource.transaction(async transaction => {
 
                 await executeHooks('$beforeDeleteModel', hooks => hooks.$beforeDeleteModel(model, transaction, resolverInfo));
 

@@ -56,7 +56,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
 
         if(filter){
 
-            const entityMetaData = info.options.connection.getMetadata(info.options.model);
+            const entityMetaData = info.options.dataSource.getMetadata(info.options.model);
 
             this.beforeApplyFilter(builder, filter, entityMetaData, info);
             this.applyFilter(builder, filter, entityMetaData, info);
@@ -70,7 +70,7 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
 
         if(filter){
 
-            const metadata = info.options.connection.getMetadata(info.options.model);
+            const metadata = info.options.dataSource.getMetadata(info.options.model);
             const relationMeta = metadata.findRelationWithPropertyPath(relation);
             const entityMetaData = relationMeta.inverseEntityMetadata;
 

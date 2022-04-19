@@ -1,4 +1,4 @@
-import { Connection, ObjectLiteral, QueryRunner, SelectQueryBuilder } from "typeorm";
+import { DataSource, ObjectLiteral, QueryRunner, SelectQueryBuilder } from "typeorm";
 import { RelationMetadata } from "typeorm/metadata/RelationMetadata";
 
 /**
@@ -6,11 +6,12 @@ import { RelationMetadata } from "typeorm/metadata/RelationMetadata";
  */
 export class RelationLoader {
 
-    constructor(private connection: Connection) {}
+    constructor(private dataSource: DataSource) {}
 
     query(relation: RelationMetadata, entityOrEntities: ObjectLiteral | ObjectLiteral[], queryRunner?: QueryRunner): SelectQueryBuilder<any> {
 
         if(queryRunner && queryRunner.isReleased) queryRunner = undefined; // get new one if already closed
+
         if(relation.isManyToOne || relation.isOneToOneOwner){
             return this.manyToOneOrOneToOneOwnerQuery(relation, entityOrEntities, queryRunner);
         }
@@ -47,7 +48,7 @@ export class RelationLoader {
         }).join(" AND ");
 
 
-        const qb = this.connection
+        const qb = this.dataSource
                        .createQueryBuilder(queryRunner)
                        .select(mainAlias) // category
                        .from(relation.type, mainAlias) // Category, category
@@ -87,7 +88,7 @@ export class RelationLoader {
         const aliasName = relation.inverseRelation!.entityMetadata.name;
         const columns = relation.inverseRelation!.joinColumns;
 
-        const qb = this.connection
+        const qb = this.dataSource
                        .createQueryBuilder(queryRunner)
                        .select(aliasName)
                        .from(relation.inverseRelation!.entityMetadata.target, aliasName);
@@ -142,7 +143,7 @@ export class RelationLoader {
             return parameters;
         }, {} as ObjectLiteral);
 
-        return this.connection
+        return this.dataSource
                    .createQueryBuilder(queryRunner)
                    .select(mainAlias)
                    .from(relation.type, mainAlias)
@@ -178,7 +179,7 @@ export class RelationLoader {
             return parameters;
         }, {} as ObjectLiteral);
 
-        return this.connection
+        return this.dataSource
                    .createQueryBuilder(queryRunner)
                    .select(mainAlias)
                    .from(relation.type, mainAlias)

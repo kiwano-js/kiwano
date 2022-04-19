@@ -1,7 +1,7 @@
 import { compact, last, flatten, clone } from 'lodash'
 
 import { GraphQLResolveInfo } from "graphql";
-import { Connection, SelectQueryBuilder } from "typeorm";
+import { DataSource, SelectQueryBuilder } from "typeorm";
 
 import {
     AnyObject,
@@ -18,7 +18,7 @@ import { getModelSelectQuery, hooksExecutor, ModelQueryResolverHooks, throwModel
 import { Plugin } from "../plugin";
 
 export interface FindResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     idArgument: string
     fieldInfo: FieldBuilderInfo
@@ -70,7 +70,7 @@ export function findResolver<ModelType, SourceType=any>(options: FindResolverOpt
         const executeHooks = hooksExecutor(hookCollections);
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const modelAlias = repository.metadata.name;
 
         // Get ID

@@ -1,5 +1,6 @@
 import { flatten, isString } from 'lodash'
 
+import { DataSource } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
@@ -33,14 +34,13 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
     protected _exclude: Set<string>;
 
-    constructor(model: ModelType);
-    constructor(model: ModelType, name: BuilderName);
+    constructor(model: ModelType, dataSource: DataSource);
     constructor(model: ModelType, options: ModelObjectTypeBuilderOptions);
-    constructor(model: ModelType, optionsOrName?: ModelObjectTypeBuilderOptions | BuilderName);
-    constructor(model: ModelType, optionsOrName?: ModelObjectTypeBuilderOptions | BuilderName){
+    constructor(model: ModelType, optionsOrDataSource?: ModelObjectTypeBuilderOptions | DataSource);
+    constructor(model: ModelType, optionsOrDataSource?: ModelObjectTypeBuilderOptions | DataSource){
 
-        const options = resolveModelBuilderOptions<ModelObjectTypeBuilderOptions, BuilderName>(optionsOrName);
-        const connection = options.connection;
+        const options = resolveModelBuilderOptions<ModelObjectTypeBuilderOptions, BuilderName>(optionsOrDataSource);
+        const connection = options.dataSource;
         const metadata = connection.getMetadata(model);
         const resolvedName = options.name ?? metadata.name;
 
@@ -81,7 +81,7 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
         const typeMapper = this._options.typeMapper;
 
-        const queryRunner = this._options.connection.createQueryRunner();
+        const queryRunner = this._options.dataSource.createQueryRunner();
         const table = await queryRunner.getTable(this._metadata.tablePath);
         await queryRunner.release();
 
@@ -152,7 +152,7 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
         for(let field of relationFields){
 
             field.extension(resolverOptionsExtensionName, () => ({
-                connection: this._options.connection,
+                dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: field.info(),
                 relation: field.name,
@@ -166,13 +166,12 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
     }
 }
 
-function modelObjectType(model: ModelType): ModelObjectTypeBuilder;
-function modelObjectType(model: ModelType, name: BuilderName): ModelObjectTypeBuilder;
+function modelObjectType(model: ModelType, dataSource: DataSource): ModelObjectTypeBuilder;
 function modelObjectType(model: ModelType, options: ModelObjectTypeBuilderOptions): ModelObjectTypeBuilder;
-function modelObjectType(model: ModelType, optionsOrName?: ModelObjectTypeBuilderOptions | BuilderName): ModelObjectTypeBuilder
-function modelObjectType(model: ModelType, optionsOrName?: ModelObjectTypeBuilderOptions | BuilderName): ModelObjectTypeBuilder {
+function modelObjectType(model: ModelType, optionsOrDataSource?: ModelObjectTypeBuilderOptions | DataSource): ModelObjectTypeBuilder
+function modelObjectType(model: ModelType, optionsOrDataSource?: ModelObjectTypeBuilderOptions | DataSource): ModelObjectTypeBuilder {
 
-    return new ModelObjectTypeBuilder(model, optionsOrName);
+    return new ModelObjectTypeBuilder(model, optionsOrDataSource);
 }
 
 export default modelObjectType;

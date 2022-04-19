@@ -1,21 +1,19 @@
-import { isString } from "lodash";
-
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 
 import { ModelBuilderOptions } from "./common";
 import typeMapper from './typeMapper'
 
-export function resolveModelBuilderOptions<OT extends ModelBuilderOptions<NT>, NT>(optionsOrName?: OT | NT): OT {
+export function resolveModelBuilderOptions<OT extends ModelBuilderOptions<NT>, NT>(optionsOrDataSource?: OT | DataSource): OT {
 
     let options: OT = {} as OT;
-    if(isString(optionsOrName)){
-        options = { name: optionsOrName as NT } as OT;
+
+    if(optionsOrDataSource instanceof DataSource){
+        options = { dataSource: optionsOrDataSource } as OT;
     }
-    else if(optionsOrName) {
-        options = optionsOrName as OT;
+    else if(optionsOrDataSource) {
+        options = optionsOrDataSource as OT;
     }
 
-    options.connection = options.connection || getConnection();
     options.typeMapper = options.typeMapper || typeMapper;
 
     return options;

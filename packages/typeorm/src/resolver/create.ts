@@ -1,7 +1,7 @@
 import { compact, first, last, clone, assign, flatten, cloneDeep } from 'lodash'
 
 import { GraphQLResolveInfo } from "graphql";
-import { Connection, EntityManager, InsertQueryBuilder } from "typeorm";
+import { DataSource, EntityManager, InsertQueryBuilder } from "typeorm";
 
 import {
     AnyObject,
@@ -25,7 +25,7 @@ import {
 } from "./common";
 
 export interface CreateResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     inputArgument: string
     fieldInfo: FieldBuilderInfo
@@ -111,7 +111,7 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
         }
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const modelAlias = repository.metadata.name;
         const modelPrimaryColumn = getModelPrimaryColumn(repository.metadata);
 
@@ -152,7 +152,7 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
 
         try {
 
-            await options.connection.transaction(async transaction => {
+            await options.dataSource.transaction(async transaction => {
 
                 await executeHooks('$beforeSave', hooks => hooks.$beforeSave(transaction, resolverInfo));
                 await executeHooks('$beforeInsertModel', hooks => hooks.$beforeInsertModel(transaction, resolverInfo));

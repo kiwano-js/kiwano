@@ -47,7 +47,7 @@ export class SortPluginHooks implements ISortPluginHooks {
 
         if(sort){
 
-            const entityMetaData = info.options.connection.getMetadata(info.options.model);
+            const entityMetaData = info.options.dataSource.getMetadata(info.options.model);
 
             this.beforeApplySort(builder, sort, entityMetaData, info);
             this.applySort(builder, sort, entityMetaData, info);
@@ -61,7 +61,7 @@ export class SortPluginHooks implements ISortPluginHooks {
 
         if(sort){
 
-            const metadata = info.options.connection.getMetadata(info.options.model);
+            const metadata = info.options.dataSource.getMetadata(info.options.model);
             const relationMeta = metadata.findRelationWithPropertyPath(relation);
             const entityMetaData = relationMeta.inverseEntityMetadata;
 

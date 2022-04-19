@@ -1,7 +1,7 @@
 import { compact, last, flatten, clone } from 'lodash'
 
 import { GraphQLResolveInfo } from "graphql";
-import { Connection, SelectQueryBuilder } from "typeorm";
+import { DataSource, SelectQueryBuilder } from "typeorm";
 
 import {
     AnyObject,
@@ -19,7 +19,7 @@ import { hooksExecutor, ModelResolverHooks } from "./common";
 import { RelationLoader } from "./RelationLoader";
 
 export interface RelationResolverOptions {
-    connection: Connection
+    dataSource: DataSource
     model: ModelType
     relation: string
     fieldInfo: FieldBuilderInfo
@@ -73,7 +73,7 @@ export function relationResolver<ModelType, SourceType=any, RelationModelType=ob
         const executeHooks = hooksExecutor(hookCollections);
 
         // Get model info
-        const repository = options.connection.getRepository(options.model);
+        const repository = options.dataSource.getRepository(options.model);
         const relationMetadata = repository.metadata.findRelationWithPropertyPath(relation);
         if(!relationMetadata){
             throw new ResolverError(`No metadata found for relation "${relation}" on "${repository.metadata.name}"`);
@@ -84,7 +84,7 @@ export function relationResolver<ModelType, SourceType=any, RelationModelType=ob
 
             async getQueryBuilder(extra?: any){
 
-                const relationLoader = new RelationLoader(options.connection);
+                const relationLoader = new RelationLoader(options.dataSource);
                 const queryBuilder = relationLoader.query(relationMetadata, source, repository.queryRunner);
 
                 await executeHooks('$modifyRelationQuery', hooks => hooks.$modifyRelationQuery(relation, queryBuilder, resolverInfo, extra));
