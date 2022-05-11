@@ -28,10 +28,12 @@ export class UpdateInputObjectTypeBuilder extends InputObjectTypeBuilder {
         const entity: ObjectTypeBuilder = this._entityObjectType instanceof ObjectTypeBuilder ? this._entityObjectType : this._entityObjectType();
         const entityInfo = entity.info();
 
+        const existingFieldNames = info.fields.map(field => field.name);
+
         for(let field of entityInfo.fields){
 
             const fieldInfo = field.info();
-            if(this._exclude.has(fieldInfo.name) || !isTypeInput(fieldInfo.type, context.rootSchema)){
+            if(this._exclude.has(fieldInfo.name) || !isTypeInput(fieldInfo.type, context.rootSchema) || existingFieldNames.indexOf(fieldInfo.name) >= 0){
                 continue;
             }
 
