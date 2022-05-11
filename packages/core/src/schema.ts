@@ -366,8 +366,8 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         let resolver: GraphQLFieldResolver<any, any> = null;
 
         const typeResolvers = resolvers[typeName];
-        if(typeResolvers){
-            resolver = typeResolvers[fieldName] || null;
+        if(typeResolvers && typeResolvers[fieldName]){
+            resolver = typeResolvers[fieldName].bind(typeResolvers);
         }
 
         return resolver;
