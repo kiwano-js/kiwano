@@ -246,7 +246,9 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 }
 
                 // Refetch model after update
-                model = await transactionRepository.findOneOrFail(transactionRepository.getId(model));
+                model = await transactionRepository.findOneByOrFail({
+                    [modelPrimaryColumn.propertyName]: transactionRepository.getId(model)
+                });
 
                 await executeHooks('$afterUpdateModel', hooks => hooks.$afterUpdateModel(model, transaction, resolverInfo));
                 await executeHooks('$afterSave', hooks => hooks.$afterSave(updatedData, transaction, resolverInfo));
