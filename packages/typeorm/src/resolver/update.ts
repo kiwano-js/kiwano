@@ -64,7 +64,7 @@ export interface UpdateResolverBaseHooks<ModelType, SourceType> extends ModelInp
     $modifyUpdateQuery?(builder: UpdateQueryBuilder<ModelType>, model: ModelType, entityManager: EntityManager, info: UpdateResolverInfo<SourceType>): OptionalPromise
 
     $beforeUpdateModel?(model: ModelType, entityManager: EntityManager, info: UpdateResolverInfo<SourceType>): OptionalPromise
-    $afterUpdateModel?(model: ModelType, entityManager: EntityManager, info: UpdateResolverInfo<SourceType>): OptionalPromise
+    $afterUpdateModel?(model: ModelType, originalModel: ModelType, entityManager: EntityManager, info: UpdateResolverInfo<SourceType>): OptionalPromise
 }
 
 export interface UpdateResolverHooks<ModelType, SourceType> extends UpdateResolverBaseHooks<ModelType, SourceType> {
@@ -246,11 +246,13 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 }
 
                 // Refetch model after update
+                const originalModel = model;
+
                 model = await transactionRepository.findOneByOrFail({
                     [modelPrimaryColumn.propertyName]: transactionRepository.getId(model)
                 });
 
-                await executeHooks('$afterUpdateModel', hooks => hooks.$afterUpdateModel(model, transaction, resolverInfo));
+                await executeHooks('$afterUpdateModel', hooks => hooks.$afterUpdateModel(model, originalModel, transaction, resolverInfo));
                 await executeHooks('$afterSave', hooks => hooks.$afterSave(updatedData, transaction, resolverInfo));
             });
         }
