@@ -44,7 +44,7 @@ export interface InsertModelResult {
 export interface CreateResolverBaseHooks<ModelType, SourceType> extends ModelInputMutationResolverHooks<ModelType, SourceType> {
 
     $beforeCreateResolver?(info: CreateResolverInfo<SourceType>): OptionalPromise
-    $afterCreateResolver?(info: CreateResolverInfo<SourceType>, result: ModelType): OptionalPromise
+    $afterCreateResolver?(info: CreateResolverInfo<SourceType>, result: ModelType | any): OptionalPromise
 
     $validateCreateInput?(input: AnyObject, info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
     $createAllowed?(info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
@@ -59,7 +59,7 @@ export interface CreateResolverBaseHooks<ModelType, SourceType> extends ModelInp
     $modifyInsertQuery?(builder: InsertQueryBuilder<ModelType>, entityManager: EntityManager, info: CreateResolverInfo<SourceType>): OptionalPromise
 
     $beforeInsertModel?(entityManager: EntityManager, info: CreateResolverInfo<SourceType>): OptionalPromise
-    $afterInsertModel?(id: string, entityManager: EntityManager, info: CreateResolverInfo<SourceType>): OptionalPromise
+    $afterInsertModel?(model: ModelType, entityManager: EntityManager, info: CreateResolverInfo<SourceType>): OptionalPromise
 }
 
 export interface CreateResolverHooks<ModelType, SourceType> extends CreateResolverBaseHooks<ModelType, SourceType> {
@@ -159,6 +159,8 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
 
                 let insertedData = null;
 
+                const transactionRepository = transaction.getRepository(options.model);
+
                 if(hooks?.$insertModel){
 
                     const insertResult = await hooks.$insertModel(input, transaction, resolverInfo);
@@ -190,7 +192,11 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                     throw new DataError(`Unable to create ${modelAlias}`);
                 }
 
-                await executeHooks('$afterInsertModel', hooks => hooks.$afterInsertModel(insertId, transaction, resolverInfo));
+                const resultModel = await transactionRepository.findOneByOrFail({
+                    [modelPrimaryColumn.propertyName]: insertId
+                });
+
+                await executeHooks('$afterInsertModel', hooks => hooks.$afterInsertModel(resultModel, transaction, resolverInfo));
                 await executeHooks('$afterSave', hooks => hooks.$afterSave(insertedData, transaction, resolverInfo));
             });
         }
