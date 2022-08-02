@@ -54,7 +54,7 @@ export class SortIndexPluginHooks implements ISortIndexPluginHooks {
 
     $modifyAllQuery(builder: SelectQueryBuilder<any>, info: AllResolverInfo<any>, extra?: any) {
 
-        builder.orderBy(this._options.sortField);
+        builder.orderBy(`${builder.alias}.${this._options.sortField}`);
     }
 
     async $beforeInsertModel(entityManager: EntityManager, info: CreateResolverInfo<any>) {
