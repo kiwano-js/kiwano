@@ -157,6 +157,9 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                 await executeHooks('$beforeSave', hooks => hooks.$beforeSave(transaction, resolverInfo));
                 await executeHooks('$beforeInsertModel', hooks => hooks.$beforeInsertModel(transaction, resolverInfo));
 
+                // Update input from resolver info
+                input = resolverInfo.input;
+
                 let insertedData = null;
 
                 const transactionRepository = transaction.getRepository(options.model);
