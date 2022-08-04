@@ -3,6 +3,7 @@ import { isFunction, clone, compact, isString, isArray, isObjectLike } from 'lod
 import { mergeSchemas } from "@graphql-tools/schema";
 import { applyMiddleware } from "graphql-middleware";
 
+import { GraphQLSchemaConfig } from "graphql/type/schema";
 import { GraphQLFieldResolver } from "graphql/type/definition";
 import {
     GraphQLBoolean,
@@ -37,6 +38,8 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
     protected _middleware: Middleware[] = [];
     protected _subSchemas: AbstractSchemaBuilder<any>[] = [];
+
+    protected _customConfig?: Readonly<GraphQLSchemaConfig>
 
     protected _defaultNamingStrategy?: NS;
     protected _namingStrategy?: NS;
@@ -83,6 +86,12 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     get namingStrategy(): NS {
 
         return this._namingStrategy || this._defaultNamingStrategy;
+    }
+
+    customConfig(config: Readonly<GraphQLSchemaConfig>): this {
+
+        this._customConfig = config;
+        return this;
     }
 
     object(name: string, configurator: Configurator<ObjectTypeBuilder>): this;
@@ -497,6 +506,7 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
         // Schema
         const schemaConfig = {
+            ...(this._customConfig || {}),
             query: this._queryObject.build(context)
         };
 
