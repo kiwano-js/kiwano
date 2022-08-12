@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 
 import { ModelBuilderOptions } from "./common";
+import { ModelSchemaBuilder } from "./modelSchema";
 import typeMapper from './typeMapper'
 
 export function resolveModelBuilderOptions<OT extends ModelBuilderOptions<NT>, NT>(optionsOrDataSource?: OT | DataSource): OT {
@@ -14,7 +15,7 @@ export function resolveModelBuilderOptions<OT extends ModelBuilderOptions<NT>, N
         options = optionsOrDataSource as OT;
     }
 
-    options.typeMapper = options.typeMapper || typeMapper;
+    options.typeMapper = options.typeMapper || ModelSchemaBuilder.typeMapper || typeMapper;
 
     return options;
 }

@@ -10,7 +10,7 @@ import {
     UpdateInputObjectTypeBuilder
 } from "@kiwano/core";
 
-import { ModelBuilderOptions, ModelType } from "./common";
+import { ColumnTypeMapper, ModelBuilderOptions, ModelType } from "./common";
 import { ModelObjectTypeBuilder } from "./modelObjectType";
 import { resolveModelBuilderOptions } from "./util";
 
@@ -25,12 +25,15 @@ import {
 import ModelQueryResolvers from "./resolver/ModelQueryResolvers";
 import ModelMutationResolvers from "./resolver/ModelMutationResolvers";
 import ModelEntityResolvers from "./resolver/ModelEntityResolvers";
+import typeMapper from "./typeMapper";
 
 export interface ModelSchemaBuilderOptions extends ModelBuilderOptions<string> {}
 
 export const resolverOptionsExtensionName = "$resolverOptions";
 
 export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNamingStrategy, ModelObjectTypeBuilder, FieldBuilder, CreateInputObjectTypeBuilder, UpdateInputObjectTypeBuilder> {
+
+    static typeMapper: ColumnTypeMapper = typeMapper;
 
     protected _options: ModelSchemaBuilderOptions;
     protected _model: ModelType;
@@ -60,7 +63,8 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
 
         return new ModelObjectTypeBuilder(this._model, {
             name,
-            dataSource: this._options.dataSource
+            dataSource: this._options.dataSource,
+            typeMapper: this._options.typeMapper
         });
     }
 

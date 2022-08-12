@@ -1,9 +1,9 @@
-import { isString } from 'lodash'
+import { isString, defaults } from 'lodash'
 
 import { ColumnType } from "typeorm";
 import { JSONResolver, UUIDResolver, ByteResolver, DateTimeResolver, DateResolver, LocalTimeResolver } from "graphql-scalars";
 
-import { ColumnTypeMapperInfo, ColumnTypeMapperResult } from "./common";
+import { ColumnTypeMapperInfo, ColumnTypeMapperResult, ColumnTypeMapperType } from "./common";
 
 export type TypeIdentifier = ColumnType | string;
 
@@ -20,11 +20,41 @@ export const timeTypes: TypeIdentifier[] = ['time', 'time with time zone', 'time
 
 export const listTypes: TypeIdentifier[] = ['set', 'simple-array', ...byteTypes];
 
-export function typeMapper(info: ColumnTypeMapperInfo): ColumnTypeMapperResult {
+export interface TypeMapperTypes {
+    string?: ColumnTypeMapperType
+    id?: ColumnTypeMapperType
+    boolean?: ColumnTypeMapperType
+    float?: ColumnTypeMapperType
+    int?: ColumnTypeMapperType
+    json?: ColumnTypeMapperType
+    byte?: ColumnTypeMapperType
+    dateTime?: ColumnTypeMapperType
+    time?: ColumnTypeMapperType
+    date?: ColumnTypeMapperType
+    uuid?: ColumnTypeMapperType
+}
+
+export const defaultTypeMapperTypes: TypeMapperTypes = {
+    string: 'String',
+    id: 'ID',
+    boolean: 'Boolean',
+    float: 'Float',
+    int: 'Int',
+    json: JSONResolver,
+    byte: ByteResolver,
+    dateTime: DateTimeResolver,
+    time: LocalTimeResolver,
+    date: DateResolver,
+    uuid: UUIDResolver
+}
+
+export function typeMapper(info: ColumnTypeMapperInfo, types?: TypeMapperTypes): ColumnTypeMapperResult {
 
     const metadata = info.columnMetadata;
     const metadataType = metadata.type;
     const tableType = info.tableColumn?.type;
+
+    const resolvedTypes = defaults(types || {}, defaultTypeMapperTypes);
 
     let type: TypeIdentifier = isString(metadataType) ? metadataType : tableType;
 
@@ -34,45 +64,45 @@ export function typeMapper(info: ColumnTypeMapperInfo): ColumnTypeMapperResult {
     }
 
     const result: ColumnTypeMapperResult = {
-        type: 'String',
+        type: resolvedTypes.string,
         list: listTypes.indexOf(type) >= 0
     }
 
     if(metadata.isPrimary || idTypes.indexOf(type) >= 0 || info.isJoinColumn){
-        result.type = 'ID';
+        result.type = resolvedTypes.id;
     }
     else if(enumTypes.indexOf(type) >= 0 && metadata.enumName){
         result.type = metadata.enumName;
     }
     else if(booleanTypes.indexOf(type) >= 0){
-        result.type = 'Boolean'
+        result.type = resolvedTypes.boolean
     }
     else if(floatTypes.indexOf(type) >= 0){
-        result.type = 'Float'
+        result.type = resolvedTypes.float
     }
     else if(intTypes.indexOf(type) >= 0){
-        result.type = 'Int'
+        result.type = resolvedTypes.int
     }
     else if(jsonTypes.indexOf(type) >= 0){
-        result.type = JSONResolver;
+        result.type = resolvedTypes.json;
     }
     else if(stringTypes.indexOf(type) >= 0){
-        result.type = 'String'
+        result.type = resolvedTypes.string
     }
     else if(byteTypes.indexOf(type) >= 0){
-        result.type = ByteResolver;
+        result.type = resolvedTypes.byte;
     }
     else if(dateTimeTypes.indexOf(type) >= 0){
-        result.type = DateTimeResolver;
+        result.type = resolvedTypes.dateTime;
     }
     else if(timeTypes.indexOf(type) >= 0){
-        result.type = LocalTimeResolver;
+        result.type = resolvedTypes.time;
     }
     else if(type === 'date'){
-        result.type = DateResolver;
+        result.type = resolvedTypes.date;
     }
     else if(type === 'uuid'){
-        result.type = UUIDResolver
+        result.type = resolvedTypes.uuid
     }
 
     return result;

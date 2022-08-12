@@ -6,8 +6,10 @@ import { TableColumn } from "typeorm/schema-builder/table/TableColumn";
 
 import { GraphQLOutputType } from "graphql";
 
+export type ColumnTypeMapperType = string | GraphQLOutputType;
+
 export interface ColumnTypeMapperResult {
-    type: string | GraphQLOutputType
+    type: ColumnTypeMapperType
     list: boolean
 }
 
