@@ -253,7 +253,7 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 });
 
                 await executeHooks('$afterUpdateModel', hooks => hooks.$afterUpdateModel(model, originalModel, transaction, resolverInfo));
-                await executeHooks('$afterSave', hooks => hooks.$afterSave(updatedData, transaction, resolverInfo));
+                await executeHooks('$afterSave', hooks => hooks.$afterSave(model, transaction, resolverInfo));
             });
         }
         catch(e){

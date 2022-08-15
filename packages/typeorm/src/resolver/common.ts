@@ -57,7 +57,7 @@ export interface ModelInputMutationResolverHooks<ModelType, SourceType> extends 
     $transformInput?(input: AnyObject, originalInput: AnyObject, info: InputResolverInfo<SourceType>): OptionalPromise<Optional<AnyObject>>
 
     $beforeSave?(entityManager: EntityManager, info: InputResolverInfo<SourceType>): OptionalPromise
-    $afterSave?(data: AnyObject, entityManager: EntityManager, info: InputResolverInfo<SourceType>): OptionalPromise
+    $afterSave?(model: ModelType, entityManager: EntityManager, info: InputResolverInfo<SourceType>): OptionalPromise
 }
 
 export function getModelSelectQuery<T>(repository: Repository<T>, id: string): SelectQueryBuilder<T> {

@@ -200,7 +200,7 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                 });
 
                 await executeHooks('$afterInsertModel', hooks => hooks.$afterInsertModel(resultModel, transaction, resolverInfo));
-                await executeHooks('$afterSave', hooks => hooks.$afterSave(insertedData, transaction, resolverInfo));
+                await executeHooks('$afterSave', hooks => hooks.$afterSave(resultModel, transaction, resolverInfo));
             });
         }
         catch(e){
