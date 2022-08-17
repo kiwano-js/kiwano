@@ -284,9 +284,11 @@ export abstract class AbstractEntitySchemaBuilder<
                 this._createInputObject = this.createCreateInputObject(this.namingStrategy.createInputObject(this.name));
             }
 
-            this.inputObject(this._createInputObject);
-
             this._createField.arg(this.namingStrategy.createFieldInputArgument(this.name), this._createInputObject.name, _ => _.nonNull());
+        }
+
+        if(this._createInputObject){
+            this.inputObject(this._createInputObject);
         }
 
         if(this._updateField){
@@ -295,9 +297,11 @@ export abstract class AbstractEntitySchemaBuilder<
                 this._updateInputObject = this.createUpdateInputObject(this.namingStrategy.updateInputObject(this.name));
             }
 
-            this.inputObject(this._updateInputObject);
-
             this._updateField.arg(this.namingStrategy.updateFieldInputArgument(this.name), this._updateInputObject.name, _ => _.nonNull());
+        }
+
+        if(this._updateInputObject){
+            this.inputObject(this._updateInputObject);
         }
     }
 
