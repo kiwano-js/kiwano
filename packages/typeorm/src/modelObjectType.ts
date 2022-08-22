@@ -4,6 +4,7 @@ import { DataSource } from "typeorm";
 import { EntityMetadata } from "typeorm/metadata/EntityMetadata";
 
 import {
+    BuilderError,
     BuilderName,
     Configurator,
     EntityFieldType,
@@ -84,6 +85,10 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
         const queryRunner = this._options.dataSource.createQueryRunner();
         const table = await queryRunner.getTable(this._metadata.tablePath);
         await queryRunner.release();
+
+        if(!table){
+            throw new BuilderError(`Table "${this._metadata.tablePath}" for model "${this._metadata.name}" not found`);
+        }
 
         const joinColumns = flatten(relations.map(relation => relation.joinColumns));
         const joinColumnNames = joinColumns.map(column => column.propertyName);
