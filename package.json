@@ -12,11 +12,10 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "lerna run build",
-    "clean": "lerna run clean",
-    "release": "lerna publish from-package --contents dist",
-    "postinstall": "lerna bootstrap --hoist"
+    "test": "npm run test --workspace=*",
+    "build": "npm run build --workspace=*",
+    "release": "npm publish --workspace=*",
+    "clean": "npm run clean --workspace=*"
   },
   "repository": {
     "type": "git",
@@ -26,11 +25,11 @@
     "url": "https://github.com/kiwano-js/kiwano/issues"
   },
   "workspaces": [
+    "packages/*",
     "libs/*"
   ],
   "devDependencies": {
     "@types/node": "^16.11.27",
-    "lerna": "^4.0.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
