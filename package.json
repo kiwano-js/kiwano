@@ -12,10 +12,10 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "npm run test --workspace=*",
-    "build": "npm run build --workspace=*",
-    "release": "npm publish --workspace=*",
-    "clean": "npm run clean --workspace=*"
+    "test": "npm run test --workspaces",
+    "build": "npm run build --workspaces",
+    "release": "npm publish --workspaces",
+    "clean": "npm run clean --workspaces"
   },
   "repository": {
     "type": "git",
