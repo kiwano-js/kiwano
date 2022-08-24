@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run clean && npm run compile && npm run copy",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run clean && npm run compile",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts"
+    "compile": "tsc -p tsconfig.build.json"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist/**"
+  ],
   "devDependencies": {
     "@kiwano/core": "^0.1.3",
     "@types/lodash": "^4.14.182",
