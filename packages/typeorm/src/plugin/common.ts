@@ -11,7 +11,8 @@ import {
     DeleteResolverBaseHooks,
     FindResolverBaseHooks,
     RelationResolverBaseHooks,
-    UpdateResolverBaseHooks
+    UpdateResolverBaseHooks,
+    RestoreResolverBaseHooks
 } from "../resolver";
 
 export interface Plugin extends CorePlugin {
@@ -24,6 +25,7 @@ export interface Plugin extends CorePlugin {
     getCreateResolverHooks?(): CreateResolverBaseHooks<any, any>[]
     getUpdateResolverHooks?(): UpdateResolverBaseHooks<any, any>[]
     getDeleteResolverHooks?(): DeleteResolverBaseHooks<any, any>[]
+    getRestoreResolverHooks?(): RestoreResolverBaseHooks<any, any>[]
 }
 
 export class MultiPlugin extends CoreMultiPlugin implements Plugin {
@@ -50,6 +52,10 @@ export class MultiPlugin extends CoreMultiPlugin implements Plugin {
 
     getDeleteResolverHooks(): DeleteResolverBaseHooks<any, any>[] {
         return this.collectResolverHooks('getDeleteResolverHooks');
+    }
+
+    getRestoreResolverHooks(): RestoreResolverBaseHooks<any, any>[] {
+        return this.collectResolverHooks('getRestoreResolverHooks');
     }
 
     collectResolverHooks(methodName: string){

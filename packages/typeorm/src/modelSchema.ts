@@ -6,7 +6,6 @@ import {
     CreateInputObjectTypeBuilder,
     EntityNamingStrategy,
     EntitySchemaBuilder,
-    FieldBuilder,
     UpdateInputObjectTypeBuilder
 } from "@kiwano/core";
 
@@ -16,22 +15,37 @@ import { resolveModelBuilderOptions } from "./util";
 
 import {
     AllResolverOptions,
+    AllResolverOptionsPartial,
     CreateResolverOptions,
+    CreateResolverOptionsPartial,
     DeleteResolverOptions,
     FindResolverOptions,
-    UpdateResolverOptions
+    FindResolverOptionsPartial,
+    RestoreResolverOptions,
+    RestoreResolverOptionsPartial,
+    UpdateResolverOptions,
+    UpdateResolverOptionsPartial
 } from "./resolver";
 
 import ModelQueryResolvers from "./resolver/ModelQueryResolvers";
 import ModelMutationResolvers from "./resolver/ModelMutationResolvers";
 import ModelEntityResolvers from "./resolver/ModelEntityResolvers";
+
+import { ModelFieldBuilder } from "./modelField";
+import { DeleteModelFieldBuilder } from "./deleteModelField";
+
 import typeMapper from "./typeMapper";
 
 export interface ModelSchemaBuilderOptions extends ModelBuilderOptions<string> {}
 
 export const resolverOptionsExtensionName = "$resolverOptions";
 
-export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNamingStrategy, ModelObjectTypeBuilder, FieldBuilder, CreateInputObjectTypeBuilder, UpdateInputObjectTypeBuilder> {
+export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<
+    EntityNamingStrategy, ModelObjectTypeBuilder,
+    ModelFieldBuilder<AllResolverOptionsPartial>, ModelFieldBuilder<FindResolverOptionsPartial>,
+    ModelFieldBuilder<CreateResolverOptionsPartial>, ModelFieldBuilder<UpdateResolverOptionsPartial>,
+    DeleteModelFieldBuilder, ModelFieldBuilder<RestoreResolverOptionsPartial>,
+    CreateInputObjectTypeBuilder, UpdateInputObjectTypeBuilder> {
 
     static typeMapper: ColumnTypeMapper = typeMapper;
 
@@ -68,29 +82,34 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
         });
     }
 
-    protected createAllField(name: BuilderName): FieldBuilder {
+    protected createAllField(name: BuilderName): ModelFieldBuilder<AllResolverOptionsPartial> {
 
-        return new FieldBuilder(name).list();
+        return new ModelFieldBuilder<AllResolverOptionsPartial>(name).list();
     }
 
-    protected createFindField(name: BuilderName): FieldBuilder {
+    protected createFindField(name: BuilderName): ModelFieldBuilder<FindResolverOptionsPartial> {
 
-        return new FieldBuilder(name);
+        return new ModelFieldBuilder<FindResolverOptionsPartial>(name);
     }
 
-    protected createCreateField(name: BuilderName): FieldBuilder {
+    protected createCreateField(name: BuilderName): ModelFieldBuilder<CreateResolverOptionsPartial> {
 
-        return new FieldBuilder(name);
+        return new ModelFieldBuilder<CreateResolverOptionsPartial>(name);
     }
 
-    protected createUpdateField(name: BuilderName): FieldBuilder {
+    protected createUpdateField(name: BuilderName): ModelFieldBuilder<UpdateResolverOptionsPartial> {
 
-        return new FieldBuilder(name);
+        return new ModelFieldBuilder<UpdateResolverOptionsPartial>(name);
     }
 
-    protected createDeleteField(name: BuilderName): FieldBuilder {
+    protected createDeleteField(name: BuilderName): DeleteModelFieldBuilder {
 
-        return new FieldBuilder(name, 'Boolean');
+        return new DeleteModelFieldBuilder(name, 'Boolean');
+    }
+
+    protected createRestoreField(name: BuilderName): ModelFieldBuilder<RestoreResolverOptionsPartial> {
+
+        return new ModelFieldBuilder<RestoreResolverOptionsPartial>(name);
     }
 
     protected createCreateInputObject(name: BuilderName): CreateInputObjectTypeBuilder {
@@ -114,7 +133,8 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
                 model: this._model,
                 fieldInfo: this._findField.info(),
                 idArgument: this.namingStrategy.findFieldIdArgument(this.name),
-                plugins: this._findField.info().plugins
+                plugins: this._findField.info().plugins,
+                ...(this._findField.getResolverOptions() || {})
             } as FindResolverOptions));
         }
 
@@ -124,7 +144,8 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
                 dataSource: this._options.dataSource,
                 model: this._model,
                 fieldInfo: this._allField.info(),
-                plugins: this._allField.info().plugins
+                plugins: this._allField.info().plugins,
+                ...(this._allField.getResolverOptions() || {})
             } as AllResolverOptions));
         }
 
@@ -135,7 +156,8 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
                 model: this._model,
                 fieldInfo: this._createField.info(),
                 inputArgument: this.namingStrategy.createFieldInputArgument(this.name),
-                plugins: this._createField.info().plugins
+                plugins: this._createField.info().plugins,
+                ...(this._createField.getResolverOptions() || {})
             } as CreateResolverOptions));
         }
 
@@ -146,7 +168,8 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
                 model: this._model,
                 fieldInfo: this._updateField.info(),
                 inputArgument: this.namingStrategy.updateFieldInputArgument(this.name),
-                plugins: this._updateField.info().plugins
+                plugins: this._updateField.info().plugins,
+                ...(this._updateField.getResolverOptions() || {})
             } as UpdateResolverOptions));
         }
 
@@ -157,8 +180,21 @@ export class ModelSchemaBuilder extends AbstractEntitySchemaBuilder<EntityNaming
                 model: this._model,
                 fieldInfo: this._deleteField.info(),
                 idArgument: this.namingStrategy.deleteFieldIdArgument(this.name),
-                plugins: this._deleteField.info().plugins
+                plugins: this._deleteField.info().plugins,
+                ...(this._deleteField.getResolverOptions() || {})
             } as DeleteResolverOptions));
+        }
+
+        if(this._restoreField){
+
+            this._restoreField.extension(resolverOptionsExtensionName, () => ({
+                dataSource: this._options.dataSource,
+                model: this._model,
+                fieldInfo: this._restoreField.info(),
+                idArgument: this.namingStrategy.restoreFieldIdArgument(this.name),
+                plugins: this._restoreField.info().plugins,
+                ...(this._restoreField.getResolverOptions() || {})
+            } as RestoreResolverOptions));
         }
     }
 }

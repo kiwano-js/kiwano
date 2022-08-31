@@ -10,12 +10,14 @@ export interface EntityNamingStrategyBase extends NamingStrategy {
     createField(schemaName: string): string;
     updateField(schemaName: string): string;
     deleteField(schemaName: string): string;
+    restoreField(schemaName: string): string;
 }
 
 export interface EntityNamingStrategy extends EntityNamingStrategyBase {
 
     findFieldIdArgument(schemaName: string): string;
     deleteFieldIdArgument(schemaName: string): string;
+    restoreFieldIdArgument(schemaName: string): string;
 
     createInputObject(schemaName: string): string;
     createFieldInputArgument(schemaName: string): string;

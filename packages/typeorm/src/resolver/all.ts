@@ -9,11 +9,14 @@ import { ModelType } from "../common";
 import { hooksExecutor, ModelQueryResolverHooks } from "./common";
 import { Plugin } from "../plugin";
 
-export interface AllResolverOptions {
+export interface AllResolverOptionsPartial {
+    plugins?: Plugin[]
+}
+
+export interface AllResolverOptions extends AllResolverOptionsPartial {
     dataSource: DataSource
     model: ModelType
     fieldInfo: FieldBuilderInfo
-    plugins?: Plugin[]
 }
 
 export interface AllResolverHelpers {

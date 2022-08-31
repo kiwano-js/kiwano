@@ -12,7 +12,7 @@ import { Configurator } from "../common";
 export type EntityType = ObjectTypeBuilder | (() => ObjectTypeBuilder);
 
 export enum EntityFieldType {
-    ALL = "ALL", FIND = "FIND", CREATE = "CREATE", UPDATE = "UPDATE", DELETE = "DELETE", RELATION = "RELATION"
+    ALL = "ALL", FIND = "FIND", CREATE = "CREATE", UPDATE = "UPDATE", DELETE = "DELETE", RESTORE = "RESTORE", RELATION = "RELATION"
 }
 
 export const entityFieldTypeExtensionName = "$entityFieldType";
@@ -20,17 +20,23 @@ export const entityFieldTypeExtensionName = "$entityFieldType";
 export abstract class AbstractEntitySchemaBuilderBase<
     NS extends EntityNamingStrategyBase,
     OT extends ObjectTypeBuilder,
-    FT extends FieldBuilder
+    AFT extends FieldBuilder,
+    FFT extends FieldBuilder,
+    CFT extends FieldBuilder,
+    UFT extends FieldBuilder,
+    DFT extends FieldBuilder,
+    RFT extends FieldBuilder,
     > extends AbstractSchemaBuilder<NS> {
 
     protected _entityObjectType?: OT;
 
-    protected _allField?: FT;
-    protected _findField?: FT;
+    protected _allField?: AFT;
+    protected _findField?: FFT;
 
-    protected _createField?: FT;
-    protected _updateField?: FT;
-    protected _deleteField?: FT;
+    protected _createField?: CFT;
+    protected _updateField?: UFT;
+    protected _deleteField?: DFT;
+    protected _restoreField?: RFT;
 
     protected _allowedEntityRoles = new Set<string>();
     protected _deniedEntityRoles = new Set<string>();
@@ -53,12 +59,12 @@ export abstract class AbstractEntitySchemaBuilderBase<
     }
 
     all(): this;
-    all(configurator: Configurator<FT>): this;
-    all(name: string, configurator: Configurator<FT>): this;
+    all(configurator: Configurator<AFT>): this;
+    all(name: string, configurator: Configurator<AFT>): this;
     all(name: string): this;
-    all(builder: FT): this;
-    all(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT>, configurator: Configurator<FT>): this;
-    all(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT> = null, configurator: Configurator<FT> = null): this {
+    all(builder: AFT): this;
+    all(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<AFT>, configurator: Configurator<AFT>): this;
+    all(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<AFT> = null, configurator: Configurator<AFT> = null): this {
 
         let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
         const defaultName = () => this.namingStrategy.allField(this.name);
@@ -69,12 +75,12 @@ export abstract class AbstractEntitySchemaBuilderBase<
     }
 
     find(): this;
-    find(configurator: Configurator<FT>): this;
-    find(name: string, configurator: Configurator<FT>): this;
+    find(configurator: Configurator<FFT>): this;
+    find(name: string, configurator: Configurator<FFT>): this;
     find(name: string): this;
-    find(builder: FT): this;
-    find(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT>, configurator: Configurator<FT>): this;
-    find(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT> = null, configurator: Configurator<FT> = null): this {
+    find(builder: FFT): this;
+    find(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FFT>, configurator: Configurator<FFT>): this;
+    find(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FFT> = null, configurator: Configurator<FFT> = null): this {
 
         let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
         const defaultName = () => this.namingStrategy.findField(this.name);
@@ -85,12 +91,12 @@ export abstract class AbstractEntitySchemaBuilderBase<
     }
 
     create(): this;
-    create(configurator: Configurator<FT>): this;
-    create(name: string, configurator: Configurator<FT>): this;
+    create(configurator: Configurator<CFT>): this;
+    create(name: string, configurator: Configurator<CFT>): this;
     create(name: string): this;
-    create(builder: FT): this;
-    create(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT>, configurator: Configurator<FT>): this;
-    create(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT> = null, configurator: Configurator<FT> = null): this {
+    create(builder: CFT): this;
+    create(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<CFT>, configurator: Configurator<CFT>): this;
+    create(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<CFT> = null, configurator: Configurator<CFT> = null): this {
 
         let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
         const defaultName = () => this.namingStrategy.createField(this.name);
@@ -101,12 +107,12 @@ export abstract class AbstractEntitySchemaBuilderBase<
     }
 
     update(): this;
-    update(configurator: Configurator<FT>): this;
-    update(name: string, configurator: Configurator<FT>): this;
+    update(configurator: Configurator<UFT>): this;
+    update(name: string, configurator: Configurator<UFT>): this;
     update(name: string): this;
-    update(builder: FT): this;
-    update(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT>, configurator: Configurator<FT>): this;
-    update(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT> = null, configurator: Configurator<FT> = null): this {
+    update(builder: UFT): this;
+    update(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<UFT>, configurator: Configurator<UFT>): this;
+    update(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<UFT> = null, configurator: Configurator<UFT> = null): this {
 
         let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
         const defaultName = () => this.namingStrategy.updateField(this.name);
@@ -117,17 +123,33 @@ export abstract class AbstractEntitySchemaBuilderBase<
     }
 
     delete(): this;
-    delete(configurator: Configurator<FT>): this;
-    delete(name: string, configurator: Configurator<FT>): this;
+    delete(configurator: Configurator<DFT>): this;
+    delete(name: string, configurator: Configurator<DFT>): this;
     delete(name: string): this;
-    delete(builder: FT): this;
-    delete(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT>, configurator: Configurator<FT>): this;
-    delete(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<FT> = null, configurator: Configurator<FT> = null): this {
+    delete(builder: DFT): this;
+    delete(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<DFT>, configurator: Configurator<DFT>): this;
+    delete(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<DFT> = null, configurator: Configurator<DFT> = null): this {
 
         let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
         const defaultName = () => this.namingStrategy.deleteField(this.name);
 
         this._deleteField = resolveBuilder(resolvedArgs, name => this.createDeleteField(name || defaultName));
+
+        return this;
+    }
+
+    restore(): this;
+    restore(configurator: Configurator<RFT>): this;
+    restore(name: string, configurator: Configurator<RFT>): this;
+    restore(name: string): this;
+    restore(builder: RFT): this;
+    restore(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<RFT>, configurator: Configurator<RFT>): this;
+    restore(builderOrConfiguratorOrName: BuilderOrConfiguratorOrName<RFT> = null, configurator: Configurator<RFT> = null): this {
+
+        let resolvedArgs = resolveAutoBuilderArgs(builderOrConfiguratorOrName, configurator, FieldBuilder);
+        const defaultName = () => this.namingStrategy.restoreField(this.name);
+
+        this._restoreField = resolveBuilder(resolvedArgs, name => this.createRestoreField(name || defaultName));
 
         return this;
     }
@@ -203,6 +225,14 @@ export abstract class AbstractEntitySchemaBuilderBase<
             this.mutation(this._deleteField);
         }
 
+        if(this._restoreField){
+
+            this._restoreField.type(this._entityObjectType.name);
+            this._restoreField.extension(entityFieldTypeExtensionName, EntityFieldType.RESTORE);
+
+            this.mutation(this._restoreField);
+        }
+
         // Entity resolvers
         if(this._entityResolvers){
 
@@ -215,21 +245,27 @@ export abstract class AbstractEntitySchemaBuilderBase<
 
     protected abstract createEntityObjectType(name: BuilderName): OT;
 
-    protected abstract createAllField(name: BuilderName): FT;
-    protected abstract createFindField(name: BuilderName): FT;
+    protected abstract createAllField(name: BuilderName): AFT;
+    protected abstract createFindField(name: BuilderName): FFT;
 
-    protected abstract createCreateField(name: BuilderName): FT;
-    protected abstract createUpdateField(name: BuilderName): FT;
-    protected abstract createDeleteField(name: BuilderName): FT;
+    protected abstract createCreateField(name: BuilderName): CFT;
+    protected abstract createUpdateField(name: BuilderName): UFT;
+    protected abstract createDeleteField(name: BuilderName): DFT;
+    protected abstract createRestoreField(name: BuilderName): RFT;
 }
 
 export abstract class AbstractEntitySchemaBuilder<
     NS extends EntityNamingStrategy,
     OT extends ObjectTypeBuilder,
-    FT extends FieldBuilder,
+    AFT extends FieldBuilder,
+    FFT extends FieldBuilder,
+    CFT extends FieldBuilder,
+    UFT extends FieldBuilder,
+    DFT extends FieldBuilder,
+    RFT extends FieldBuilder,
     CIT extends InputObjectTypeBuilder,
     UIT extends InputObjectTypeBuilder
-    > extends AbstractEntitySchemaBuilderBase<NS, OT, FT> {
+    > extends AbstractEntitySchemaBuilderBase<NS, OT, AFT, FFT, CFT, UFT, DFT, RFT> {
 
     protected _createInputObject?: CIT;
     protected _updateInputObject?: UIT;
@@ -278,6 +314,10 @@ export abstract class AbstractEntitySchemaBuilder<
             this._deleteField.arg(this.namingStrategy.deleteFieldIdArgument(this.name), 'ID', _ => _.nonNull());
         }
 
+        if(this._restoreField){
+            this._restoreField.arg(this.namingStrategy.restoreFieldIdArgument(this.name), 'ID', _ => _.nonNull());
+        }
+
         if(this._createField){
 
             if(!this._createInputObject){
@@ -309,7 +349,10 @@ export abstract class AbstractEntitySchemaBuilder<
     protected abstract createUpdateInputObject(name: BuilderName): UIT;
 }
 
-export class EntitySchemaBuilder extends AbstractEntitySchemaBuilder<EntityNamingStrategy, ObjectTypeBuilder, FieldBuilder, CreateInputObjectTypeBuilder, UpdateInputObjectTypeBuilder> {
+export class EntitySchemaBuilder extends AbstractEntitySchemaBuilder<
+    EntityNamingStrategy, ObjectTypeBuilder,
+    FieldBuilder, FieldBuilder, FieldBuilder, FieldBuilder, FieldBuilder, FieldBuilder,
+    CreateInputObjectTypeBuilder, UpdateInputObjectTypeBuilder> {
 
     public static defaultNamingStrategy: EntityNamingStrategy = compactNamingStrategy();
 
@@ -347,6 +390,11 @@ export class EntitySchemaBuilder extends AbstractEntitySchemaBuilder<EntityNamin
     protected createDeleteField(name: BuilderName): FieldBuilder {
 
         return new FieldBuilder(name, 'Boolean');
+    }
+
+    protected createRestoreField(name: BuilderName): FieldBuilder {
+
+        return new FieldBuilder(name);
     }
 
     protected createCreateInputObject(name: BuilderName): CreateInputObjectTypeBuilder {

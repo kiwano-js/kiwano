@@ -3,11 +3,12 @@ import { EntityFieldType, ResolverInfo } from "@kiwano/core";
 import createCreateResolver, { CreateResolverHooks, CreateResolverOptions } from "./create";
 import createUpdateResolver, { UpdateResolverHooks, UpdateResolverOptions } from "./update";
 import createDeleteResolver, { DeleteResolverHooks, DeleteResolverOptions } from "./delete";
+import createRestoreResolver, { RestoreResolverHooks, RestoreResolverOptions } from "./restore";
 
 import AbstractModelResolvers from "./AbstractModelResolvers";
 import { EntityFieldInfo } from "./common";
 
-export class ModelMutationResolvers<ModelType, SourceType=any> extends AbstractModelResolvers<ModelType, SourceType> implements CreateResolverHooks<ModelType, SourceType>, UpdateResolverHooks<ModelType, SourceType>, DeleteResolverHooks<ModelType, SourceType> {
+export class ModelMutationResolvers<ModelType, SourceType=any> extends AbstractModelResolvers<ModelType, SourceType> implements CreateResolverHooks<ModelType, SourceType>, UpdateResolverHooks<ModelType, SourceType>, DeleteResolverHooks<ModelType, SourceType>, RestoreResolverHooks<ModelType, SourceType> {
 
     $executeResolver(resolverInfo: ResolverInfo<SourceType>, fieldInfo: EntityFieldInfo){
 
@@ -27,6 +28,11 @@ export class ModelMutationResolvers<ModelType, SourceType=any> extends AbstractM
 
                 const deleteResolver = createDeleteResolver<ModelType, SourceType>(fieldInfo.resolverOptions as DeleteResolverOptions, this);
                 return deleteResolver(resolverInfo.source, resolverInfo.args, resolverInfo.context, resolverInfo.info);
+
+            case EntityFieldType.RESTORE:
+
+                const restoreResolver = createRestoreResolver<ModelType, SourceType>(fieldInfo.resolverOptions as RestoreResolverOptions, this);
+                return restoreResolver(resolverInfo.source, resolverInfo.args, resolverInfo.context, resolverInfo.info);
         }
     }
 }

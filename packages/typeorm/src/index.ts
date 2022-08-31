@@ -3,6 +3,8 @@ import modelSchema from './modelSchema'
 export * from './plugin'
 export * from './resolver'
 
+export * from './deleteModelField'
+export * from './modelField'
 export * from './modelObjectType'
 export * from './modelSchema'
 

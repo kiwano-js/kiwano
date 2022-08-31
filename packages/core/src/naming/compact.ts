@@ -27,11 +27,19 @@ export class CompactNamingStrategy implements EntityNamingStrategy {
         return `delete${ucFirst(schemaName)}`;
     }
 
+    restoreField(schemaName: string): string {
+        return `restore${ucFirst(schemaName)}`;
+    }
+
     findFieldIdArgument(schemaName: string): string {
         return 'id';
     }
 
     deleteFieldIdArgument(schemaName: string): string {
+        return 'id';
+    }
+
+    restoreFieldIdArgument(schemaName: string): string {
         return 'id';
     }
 

@@ -17,13 +17,16 @@ import { ModelType } from "../common";
 import { getModelSelectQuery, hooksExecutor, ModelQueryResolverHooks, throwModelNotFound } from "./common";
 import { Plugin } from "../plugin";
 
-export interface FindResolverOptions {
+export interface FindResolverOptionsPartial {
+    plugins?: Plugin[]
+    resultRequired?: boolean
+}
+
+export interface FindResolverOptions extends FindResolverOptionsPartial {
     dataSource: DataSource
     model: ModelType
     idArgument: string
     fieldInfo: FieldBuilderInfo
-    plugins?: Plugin[]
-    resultRequired?: boolean
 }
 
 export interface FindResolverHelpers<ModelType> {

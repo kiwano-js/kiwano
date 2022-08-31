@@ -24,12 +24,15 @@ import {
     throwModelNotFound
 } from "./common";
 
-export interface CreateResolverOptions {
+export interface CreateResolverOptionsPartial {
+    plugins?: Plugin[]
+}
+
+export interface CreateResolverOptions extends CreateResolverOptionsPartial {
     dataSource: DataSource
     model: ModelType
     inputArgument: string
     fieldInfo: FieldBuilderInfo
-    plugins?: Plugin[]
 }
 
 export interface CreateResolverInfo<SourceType> extends InputResolverInfo<SourceType> {

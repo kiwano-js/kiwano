@@ -26,14 +26,16 @@ import {
     throwModelNotFound
 } from "./common";
 
+export interface DeleteResolverOptionsPartial {
+    softDelete?: Optional<boolean>
+    plugins?: Plugin[]
+}
 
-export interface DeleteResolverOptions {
+export interface DeleteResolverOptions extends DeleteResolverOptionsPartial {
     dataSource: DataSource
     model: ModelType
     idArgument: string
     fieldInfo: FieldBuilderInfo
-    softDelete?: Optional<boolean>
-    plugins?: Plugin[]
 }
 
 export interface DeleteResolverInfo<SourceType> extends ResolverInfo<SourceType> {
