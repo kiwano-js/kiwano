@@ -18,11 +18,11 @@ import { Plugin } from "../common";
 import {
     AllResolverBaseHooks, AllResolverInfo,
     CreateResolverBaseHooks, CreateResolverInfo,
-    DeleteResolverBaseHooks, DeleteResolverInfo,
+    DeleteResolverBaseHooks, DeleteResolverInfo, RestoreResolverBaseHooks, RestoreResolverInfo,
     UpdateResolverBaseHooks, UpdateResolverInfo
 } from "../../resolver";
 
-export interface ISortIndexPluginHooks extends AllResolverBaseHooks<any, any>, CreateResolverBaseHooks<any, any>, UpdateResolverBaseHooks<any, any>, DeleteResolverBaseHooks<any, any> {}
+export interface ISortIndexPluginHooks extends AllResolverBaseHooks<any, any>, CreateResolverBaseHooks<any, any>, UpdateResolverBaseHooks<any, any>, DeleteResolverBaseHooks<any, any>, RestoreResolverBaseHooks<any, any> {}
 
 export interface SortIndexPluginOptions {
     sortField?: string
@@ -46,6 +46,104 @@ export interface SortIndexPluginMoveOptions {
 export const defaultSortIndexPluginOptions: SortIndexPluginOptions = {
     sortField: 'sortIndex',
     idField: 'id'
+}
+
+export interface GetLatestSortIndexOptions {
+    repository: Repository<any>
+    sortField: string
+    conditions?: ObjectLiteral
+}
+
+export interface MoveSortIndexOptions extends SortIndexPluginMoveOptions {
+    latestSortIndex: number
+    repository: Repository<any>
+    sortField: string
+    idField: string
+}
+
+export async function getLatestSortIndex(options: GetLatestSortIndexOptions): Promise<number> {
+
+    const { repository, sortField, conditions } = options;
+
+    const sortColumn = repository.metadata.findColumnWithPropertyName(sortField);
+    if(!sortColumn){
+        throw new PluginError(`Sort field "${sortField}" not found in "${repository.metadata.name}"`);
+    }
+
+    const query = repository
+        .createQueryBuilder('model')
+        .select(`MAX(model.${sortColumn.databaseName})`, 'max');
+
+    if(conditions){
+
+        const fixedConditions = mapValues(conditions, val => isNil(val) ? IsNull() : val);
+        query.where(fixedConditions);
+    }
+
+    const result = await query.getRawOne();
+    return result.max;
+}
+
+export async function moveSortIndex(options: MoveSortIndexOptions) {
+
+    let { newIndex, oldIndex, conditions, latestSortIndex, sortField, idField, repository } = options;
+
+    if(!isNil(newIndex)){
+
+        newIndex = Math.max(newIndex, 1);
+        newIndex = Math.min(newIndex, (latestSortIndex || 1));
+    }
+
+    if(newIndex == oldIndex){
+        return;
+    }
+
+    const sortColumn = repository.metadata.findColumnWithPropertyName(sortField);
+    if(!sortColumn){
+        throw new PluginError(`Sort field "${sortField}" not found in "${repository.metadata.name}"`);
+    }
+
+    let operator = null;
+    let sortCondition = null
+
+    if(!isNil(newIndex) && !isNil(oldIndex)){
+
+        operator = newIndex < oldIndex ? '+' : '-';
+        sortCondition = Between(Math.min(newIndex, oldIndex), Math.max(newIndex, oldIndex))
+    }
+    else if(!isNil(newIndex)){
+
+        operator = '+';
+        sortCondition = MoreThanOrEqual(newIndex);
+    }
+    else if(!isNil(oldIndex)){
+
+        operator = '-';
+        sortCondition = MoreThan(oldIndex);
+    }
+
+    if(!operator || !sortCondition){
+        return;
+    }
+
+    const query = repository
+        .createQueryBuilder()
+        .update()
+        .set({
+            [sortField]: () => `${sortColumn.databaseName} ${operator} 1`
+        })
+        .where({
+            [sortField]: sortCondition,
+            [idField]: Not(options.id)
+        });
+
+    if(conditions){
+
+        const fixedConditions = mapValues(conditions, val => isNil(val) ? IsNull() : val);
+        query.andWhere(fixedConditions);
+    }
+
+    await query.execute();
 }
 
 export class SortIndexPluginHooks implements ISortIndexPluginHooks {
@@ -82,6 +180,18 @@ export class SortIndexPluginHooks implements ISortIndexPluginHooks {
     }
 
     async $afterInsertModel(model: any, entityManager: EntityManager, info: CreateResolverInfo<any>) {
+
+        const { sortField, idField } = this._options;
+        const repository = entityManager.getRepository(info.options.model);
+
+        await this.moveSortIndex(repository, {
+            id: model[idField],
+            newIndex: model[sortField],
+            conditions: this.getModelConditions(model)
+        });
+    }
+
+    async $afterRestoreModel(model: any, entityManager: EntityManager, info: RestoreResolverInfo<any>) {
 
         const { sortField, idField } = this._options;
         const repository = entityManager.getRepository(info.options.model);
@@ -152,23 +262,12 @@ export class SortIndexPluginHooks implements ISortIndexPluginHooks {
     async getLatestSortIndex(repository: Repository<any>, conditions?: ObjectLiteral): Promise<number> {
 
         const { sortField } = this._options;
-        const sortColumn = repository.metadata.findColumnWithPropertyName(sortField);
-        if(!sortColumn){
-            throw new PluginError(`Sort field "${sortField}" not found in "${repository.metadata.name}"`);
-        }
 
-        const query = repository
-            .createQueryBuilder('model')
-            .select(`MAX(model.${sortColumn.databaseName})`, 'max');
-
-        if(conditions){
-
-            const fixedConditions = mapValues(conditions, val => isNil(val) ? IsNull() : val);
-            query.where(fixedConditions);
-        }
-
-        const result = await query.getRawOne();
-        return result.max;
+        return getLatestSortIndex({
+            repository,
+            conditions,
+            sortField
+        });
     }
 
     async getNextSortIndex(repository: Repository<any>, conditions?: ObjectLiteral): Promise<number> {
@@ -179,67 +278,17 @@ export class SortIndexPluginHooks implements ISortIndexPluginHooks {
 
     async moveSortIndex(repository: Repository<any>, options: SortIndexPluginMoveOptions): Promise<void> {
 
-        let { newIndex, oldIndex, conditions } = options;
+        let { conditions } = options;
         const { sortField, idField } = this._options;
 
         const latestSortIndex = await this.getLatestSortIndex(repository, conditions);
 
-        if(!isNil(newIndex)){
-
-            newIndex = Math.max(newIndex, 1);
-            newIndex = Math.min(newIndex, (latestSortIndex || 1));
-        }
-
-        if(newIndex == oldIndex){
-            return;
-        }
-
-        const sortColumn = repository.metadata.findColumnWithPropertyName(sortField);
-        if(!sortColumn){
-            throw new PluginError(`Sort field "${sortField}" not found in "${repository.metadata.name}"`);
-        }
-
-        let operator = null;
-        let sortCondition = null
-
-        if(!isNil(newIndex) && !isNil(oldIndex)){
-
-            operator = newIndex < oldIndex ? '+' : '-';
-            sortCondition = Between(Math.min(newIndex, oldIndex), Math.max(newIndex, oldIndex))
-        }
-        else if(!isNil(newIndex)){
-
-            operator = '+';
-            sortCondition = MoreThanOrEqual(newIndex);
-        }
-        else if(!isNil(oldIndex)){
-
-            operator = '-';
-            sortCondition = MoreThan(oldIndex);
-        }
-
-        if(!operator || !sortCondition){
-            return;
-        }
-
-        const query = repository
-            .createQueryBuilder()
-            .update()
-            .set({
-                [sortField]: () => `${sortColumn.databaseName} ${operator} 1`
-            })
-            .where({
-                [sortField]: sortCondition,
-                [idField]: Not(options.id)
-            });
-
-        if(conditions){
-
-            const fixedConditions = mapValues(conditions, val => isNil(val) ? IsNull() : val);
-            query.andWhere(fixedConditions);
-        }
-
-        await query.execute();
+        return moveSortIndex({
+            ...options,
+            sortField, idField,
+            repository,
+            latestSortIndex
+        });
     }
 }
 
@@ -300,6 +349,11 @@ export class SortIndexPlugin implements Plugin {
     }
 
     getDeleteResolverHooks(): DeleteResolverBaseHooks<any, any>[] {
+
+        return [this._resolvedHooks];
+    }
+
+    getRestoreResolverHooks(): RestoreResolverBaseHooks<any, any>[] {
 
         return [this._resolvedHooks];
     }
