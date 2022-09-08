@@ -37,7 +37,7 @@ export interface SortIndexPluginHooksOptions {
 }
 
 export interface SortIndexPluginMoveOptions {
-    id: number
+    id: number|string
     oldIndex?: number
     newIndex?: number
     conditions?: ObjectLiteral
@@ -55,7 +55,7 @@ export interface GetLatestSortIndexOptions {
 }
 
 export interface MoveSortIndexOptions extends SortIndexPluginMoveOptions {
-    latestSortIndex: number
+    latestSortIndex?: number
     repository: Repository<any>
     sortField: string
     idField: string
@@ -91,7 +91,10 @@ export async function moveSortIndex(options: MoveSortIndexOptions) {
     if(!isNil(newIndex)){
 
         newIndex = Math.max(newIndex, 1);
-        newIndex = Math.min(newIndex, (latestSortIndex || 1));
+
+        if(!isNil(latestSortIndex)){
+            newIndex = Math.min(newIndex, (latestSortIndex || 1));
+        }
     }
 
     if(newIndex == oldIndex){
