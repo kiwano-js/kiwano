@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/monorepo",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "-",
   "homepage": "https://github.com/kiwano-js/kiwano#readme",
   "license": "MIT",
@@ -9,13 +9,11 @@
     "name": "Bart Blok",
     "email": "bart@wittig.nl"
   },
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "npm run test --workspaces",
-    "build": "npm run build --workspaces",
-    "release": "npm publish --workspaces",
-    "clean": "npm run clean --workspaces"
+    "build": "lerna run build",
+    "clean": "lerna run clean",
+    "publish": "lerna publish from-package",
+    "postinstall": "lerna bootstrap --hoist"
   },
   "repository": {
     "type": "git",
@@ -24,14 +22,11 @@
   "bugs": {
     "url": "https://github.com/kiwano-js/kiwano/issues"
   },
-  "workspaces": [
-    "packages/*",
-    "libs/*"
-  ],
   "devDependencies": {
-    "@types/node": "^16.11.27",
+    "@types/node": "^18.7.16",
     "rimraf": "^3.0.2",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3",
+    "lerna": "^5.5.0"
   }
 }
