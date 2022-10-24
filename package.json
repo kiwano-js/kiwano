@@ -12,8 +12,7 @@
   "scripts": {
     "build": "lerna run build",
     "clean": "lerna run clean",
-    "publish": "lerna publish from-package",
-    "postinstall": "lerna bootstrap --hoist"
+    "publish": "lerna publish from-package"
   },
   "repository": {
     "type": "git",
