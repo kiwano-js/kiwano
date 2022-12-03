@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/core",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -31,10 +31,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.182",
-    "graphql": "^15.8.0",
+    "@types/lodash": "^4.14.191",
+    "graphql": "^16.6.0",
     "rimraf": "^3.0.2",
-    "typescript": "^4.8.3"
+    "typescript": "^4.9.3"
   },
   "dependencies": {
     "@graphql-tools/schema": "^8.3.9",
@@ -43,7 +43,7 @@
     "pluralize": "^8.0.0"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0"
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "gitHead": "8c06d628d7cfaddff14bbd8fc08fefb1d9be0118"
 }

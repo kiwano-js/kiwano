@@ -4,11 +4,11 @@ import { defaultFieldResolver, GraphQLResolveInfo } from "graphql";
 
 import {
     AnyObject,
-    builderInfoExtensionName,
-    entityFieldTypeExtensionName,
+    builderInfoExtensionName, EntityFieldType,
+    entityFieldTypeExtensionName, FieldBuilderInfo,
     ResolverError,
     ResolverInfo
-} from "@kiwano/core";
+} from '@kiwano/core';
 
 import { resolverOptionsExtensionName } from "../modelSchema";
 import { EntityFieldInfo } from "./common";
@@ -39,8 +39,8 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
 
                     if(fieldType){
 
-                        const fieldInfo = fieldType.extensions[builderInfoExtensionName];
-                        const entityFieldType = fieldType.extensions[entityFieldTypeExtensionName];
+                        const fieldInfo = fieldType.extensions[builderInfoExtensionName] as FieldBuilderInfo;
+                        const entityFieldType = fieldType.extensions[entityFieldTypeExtensionName] as EntityFieldType;
 
                         if(fieldInfo && entityFieldType){
 

@@ -114,14 +114,14 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
         if(this._list){
 
             if(this._nonNullList){
-                type = GraphQLNonNull(type);
+                type = new GraphQLNonNull(type);
             }
 
-            type = GraphQLList(type);
+            type = new GraphQLList(type);
         }
 
         if(this._nonNull){
-            type = GraphQLNonNull(type);
+            type = new GraphQLNonNull(type);
         }
 
         const argument = {
