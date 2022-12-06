@@ -1,5 +1,5 @@
 {
-    "extends": "../../tsconfig.build.json",
+    "extends": "@kiwano/tsconfig/tsconfig.build.json",
     "compilerOptions": {
         "outDir": "./dist"
     },

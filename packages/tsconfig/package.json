@@ -1,0 +1,15 @@
+{
+  "name": "@kiwano/tsconfig",
+  "version": "1.0.0",
+  "description": "-",
+  "homepage": "https://github.com/kiwano-js/kiwano#readme",
+  "license": "MIT",
+  "private": true,
+  "author": {
+    "name": "Bart Blok",
+    "email": "bart@wittig.nl"
+  },
+  "files": [
+    "tsconfig.build.json"
+  ]
+}
