@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
-    "watch": "tsc --watch --preserveWatchOutput -p tsconfig.build.json",
+    "compile": "tsc -p tsconfig.json",
+    "watch": "tsc --watch --preserveWatchOutput -p tsconfig.json",
     "publish": "npm publish"
   },
   "repository": {
@@ -33,7 +33,6 @@
   },
   "devDependencies": {
     "@kiwano/core": "^1.0.0",
-    "@kiwano/tsconfig": "^1.0.0",
     "@types/lodash": "^4.14.191",
     "rimraf": "^3.0.2",
     "typeorm": "^0.3.10",
