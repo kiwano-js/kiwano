@@ -35,10 +35,10 @@ export class InputObjectTypeBuilder extends Builder<GraphQLInputType> {
         return this;
     }
 
-    field(name: string, type: InputFieldType, configurator: Configurator<InputFieldBuilder>);
-    field(name: string, type: InputFieldType);
-    field(field: InputFieldBuilder);
-    field(fieldOrName: InputFieldBuilder | string, type: InputFieldType, configurator: Configurator<InputFieldBuilder>);
+    field(name: string, type: InputFieldType, configurator: Configurator<InputFieldBuilder>): this;
+    field(name: string, type: InputFieldType): this;
+    field(field: InputFieldBuilder): this;
+    field(fieldOrName: InputFieldBuilder | string, type: InputFieldType, configurator: Configurator<InputFieldBuilder>): this;
     field(fieldOrName: InputFieldBuilder | string, type: InputFieldType = null, configurator: Configurator<InputFieldBuilder> = null): this {
 
         let field: InputFieldBuilder = null;
