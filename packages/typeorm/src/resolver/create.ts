@@ -47,7 +47,7 @@ export interface InsertModelResult {
 export interface CreateResolverBaseHooks<ModelType, SourceType> extends ModelInputMutationResolverHooks<ModelType, SourceType> {
 
     $beforeCreateResolver?(info: CreateResolverInfo<SourceType>): OptionalPromise
-    $afterCreateResolver?(info: CreateResolverInfo<SourceType>, result: ModelType | any): OptionalPromise
+    $afterCreateResolver?(result: ModelType | any, info: CreateResolverInfo<SourceType>): OptionalPromise
 
     $validateCreateInput?(input: AnyObject, info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
     $createAllowed?(info: CreateResolverInfo<SourceType>): OptionalPromise<boolean>
@@ -163,8 +163,6 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                 // Update input from resolver info
                 input = resolverInfo.input;
 
-                let insertedData = null;
-
                 const transactionRepository = transaction.getRepository(options.model);
 
                 if(hooks?.$insertModel){
@@ -172,7 +170,6 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                     const insertResult = await hooks.$insertModel(input, transaction, resolverInfo);
 
                     if(insertResult){
-                        insertedData = insertResult.data;
                         insertId = insertResult.id;
                     }
                 }
@@ -191,7 +188,6 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
                     const firstMap = first(insertResult.generatedMaps);
 
                     insertId = firstIdentifier ? firstIdentifier[modelPrimaryColumn.propertyName] : null;
-                    insertedData = firstMap ? assign({}, inputValues, firstMap) : null;
                 }
 
                 if(!insertId){
@@ -249,7 +245,7 @@ export function createResolver<ModelType, SourceType=any>(options: CreateResolve
             result = last(compact(transformedResult)) || result;
         }
 
-        await executeHooks('$afterCreateResolver', hooks => hooks.$afterCreateResolver(resolverInfo, model));
+        await executeHooks('$afterCreateResolver', hooks => hooks.$afterCreateResolver(result, resolverInfo));
         await executeHooks('$afterResolver', hooks => hooks.$afterResolver(resolverInfo));
 
         return result;

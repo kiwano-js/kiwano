@@ -50,7 +50,7 @@ export interface UpdateModelResult {
 export interface UpdateResolverBaseHooks<ModelType, SourceType> extends ModelInputMutationResolverHooks<ModelType, SourceType> {
 
     $beforeUpdateResolver?(info: UpdateResolverInfo<SourceType>): OptionalPromise
-    $afterUpdateResolver?(info: UpdateResolverInfo<SourceType>): OptionalPromise
+    $afterUpdateResolver?(result: ModelType | any, info: UpdateResolverInfo<SourceType>): OptionalPromise
 
     $validateUpdateInput?(input: AnyObject, model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise<boolean>
     $updateAllowed?(model: ModelType, info: UpdateResolverInfo<SourceType>): OptionalPromise<boolean>
@@ -207,7 +207,6 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                 await executeHooks('$beforeUpdateModel', hooks => hooks.$beforeUpdateModel(model, transaction, resolverInfo));
 
                 let success;
-                let updatedData = null;
 
                 const transactionRepository = transaction.getRepository(options.model);
 
@@ -220,8 +219,6 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
                         if(updateResult.success !== false){
                             success = true;
                         }
-
-                        updatedData = updateResult.data || null;
                     }
                     else {
                         success = true;
@@ -239,8 +236,6 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
 
                     await updateQueryBuilder.execute();
                     success = true;
-
-                    updatedData = assign({}, model, safeUpdateData);
                 }
 
                 if(!success){
@@ -273,7 +268,7 @@ export function updateResolver<ModelType, SourceType=any>(options: UpdateResolve
             result = last(compact(transformedResult)) || result;
         }
 
-        await executeHooks('$afterUpdateResolver', hooks => hooks.$afterUpdateResolver(resolverInfo));
+        await executeHooks('$afterUpdateResolver', hooks => hooks.$afterUpdateResolver(result, resolverInfo));
         await executeHooks('$afterResolver', hooks => hooks.$afterResolver(resolverInfo));
 
         return result;

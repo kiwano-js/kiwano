@@ -46,7 +46,7 @@ export interface DeleteResolverInfo<SourceType> extends ResolverInfo<SourceType>
 export interface DeleteResolverBaseHooks<ModelType, SourceType> extends ModelMutationResolverHooks<ModelType, SourceType> {
 
     $beforeDeleteResolver?(info: DeleteResolverInfo<SourceType>): OptionalPromise
-    $afterDeleteResolver?(info: DeleteResolverInfo<SourceType>): OptionalPromise
+    $afterDeleteResolver?(model: ModelType, info: DeleteResolverInfo<SourceType>): OptionalPromise
 
     $deleteAllowed?(model: ModelType, info: DeleteResolverInfo<SourceType>): OptionalPromise<boolean>
 
@@ -199,7 +199,7 @@ export function deleteResolver<ModelType, SourceType=any>(options: DeleteResolve
             throw e;
         }
 
-        await executeHooks('$afterDeleteResolver', hooks => hooks.$afterDeleteResolver(resolverInfo));
+        await executeHooks('$afterDeleteResolver', hooks => hooks.$afterDeleteResolver(model, resolverInfo));
         await executeHooks('$afterResolver', hooks => hooks.$afterResolver(resolverInfo));
 
         return true;

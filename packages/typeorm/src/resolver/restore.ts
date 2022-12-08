@@ -44,7 +44,7 @@ export interface RestoreResolverInfo<SourceType> extends ResolverInfo<SourceType
 export interface RestoreResolverBaseHooks<ModelType, SourceType> extends ModelMutationResolverHooks<ModelType, SourceType> {
 
     $beforeRestoreResolver?(info: RestoreResolverInfo<SourceType>): OptionalPromise
-    $afterRestoreResolver?(info: RestoreResolverInfo<SourceType>): OptionalPromise
+    $afterRestoreResolver?(result: ModelType | any, info: RestoreResolverInfo<SourceType>): OptionalPromise
 
     $restoreAllowed?(model: ModelType, info: RestoreResolverInfo<SourceType>): OptionalPromise<boolean>
 
@@ -199,7 +199,7 @@ export function restoreResolver<ModelType, SourceType=any>(options: RestoreResol
             result = last(compact(transformedResult)) || result;
         }
 
-        await executeHooks('$afterRestoreResolver', hooks => hooks.$afterRestoreResolver(resolverInfo));
+        await executeHooks('$afterRestoreResolver', hooks => hooks.$afterRestoreResolver(result, resolverInfo));
         await executeHooks('$afterResolver', hooks => hooks.$afterResolver(resolverInfo));
 
         return result;
