@@ -9,8 +9,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.json",
-    "watch": "tsc --watch --preserveWatchOutput -p tsconfig.json",
-    "publish": "npm publish"
+    "watch": "tsc --watch --preserveWatchOutput -p tsconfig.json"
   },
   "repository": {
     "type": "git",
