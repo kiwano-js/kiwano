@@ -1,12 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
   "pipeline": {
     "watch": {
       "cache": false
     },
     "build": {
       "dependsOn": [ "^build" ],
-      "outputs": [ "dist/**", ".next/**" ]
+      "outputs": [ "dist/**" ]
     },
     "publish": {
       "dependsOn": [ "build" ]
