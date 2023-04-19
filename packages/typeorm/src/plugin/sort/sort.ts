@@ -23,8 +23,9 @@ import { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, Relat
 export interface ISortPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
 
 export interface SortPluginHooksOptions {
-    argumentName: string,
+    argumentName: string
     relations: SortPluginRelationField[]
+    nullLast: boolean
 }
 
 export interface SortPluginRelationField {
@@ -35,6 +36,7 @@ export interface SortPluginRelationField {
 
 export interface SortPluginOptions extends CoreSortPluginOptions {
     relations?: SortPluginRelationField[]
+    nullLast: boolean
 }
 
 export class SortPluginHooks implements ISortPluginHooks {
@@ -85,6 +87,10 @@ export class SortPluginHooks implements ISortPluginHooks {
 
     applyFieldSort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata){
 
+        if(this._options.nullLast){
+            builder.addOrderBy(`${metadata.name}.${config.field} IS NULL`);
+        }
+
         builder.addOrderBy(`${metadata.name}.${config.field}`, config.direction);
     }
 
@@ -101,6 +107,10 @@ export class SortPluginHooks implements ISortPluginHooks {
 
         const joinAliasName = `SortPluginRelation${relationMeta.inverseEntityMetadata!.name}`;
         addRelationJoin(builder, relationMeta, metadata.name, joinAliasName);
+
+        if(this._options.nullLast){
+            builder.addOrderBy(`${joinAliasName}.${relationConfig.relationField} IS NULL`);
+        }
 
         builder.addOrderBy(`${joinAliasName}.${relationConfig.relationField}`, config.direction);
     }
@@ -121,7 +131,8 @@ export class SortPlugin extends CoreSortPlugin implements Plugin {
         this._options = defaults(options || {}, coreDefaultOptions, {
             exclude: [],
             include: [],
-            relations: []
+            relations: [],
+            nullLast: false
         });
     }
 
@@ -134,6 +145,13 @@ export class SortPlugin extends CoreSortPlugin implements Plugin {
             name: name || camelize(`${relation} ${relationField}`)
         });
 
+        return this;
+    }
+
+    nullLast(): this;
+    nullLast(enabled = true): this {
+
+        this._options.nullLast = enabled;
         return this;
     }
 
@@ -157,7 +175,8 @@ export class SortPlugin extends CoreSortPlugin implements Plugin {
 
         const hooksOptions: SortPluginHooksOptions = {
             argumentName: this._options.argumentName,
-            relations: this._options.relations
+            relations: this._options.relations,
+            nullLast: this._options.nullLast
         };
 
         if(this._hooks){
