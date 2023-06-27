@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/typeorm",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -31,11 +31,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@kiwano/core": "^1.0.2",
+    "@kiwano/core": "^1.1.0",
     "@types/lodash": "^4.14.195",
     "rimraf": "^5.0.1",
     "typeorm": "^0.3.17",
-    "typescript": "^5.1.3",
+    "typescript": "^4.9.3",
     "@types/node": "^20.3.2"
   },
   "dependencies": {
@@ -44,7 +44,7 @@
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "@kiwano/core": "^1.0.2",
+    "@kiwano/core": "^1.1.0",
     "typeorm": "^0.3.0"
   },
   "gitHead": "8c06d628d7cfaddff14bbd8fc08fefb1d9be0118"
