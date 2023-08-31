@@ -1,6 +1,6 @@
 import { defaults, isEqual, isNil, mapValues, pick } from "lodash";
 
-import { AbstractSchemaBuilder, ConstructorType, ensureInstantiated, PluginError } from "@kiwano/core";
+import { AbstractSchemaBuilder, ConstructorType, ensureInstantiated, PluginError } from '@kiwano/core';
 
 import {
     Between,
@@ -308,7 +308,7 @@ export class SortIndexPlugin implements Plugin {
         });
     }
 
-    beforeBuildSchema(builder: AbstractSchemaBuilder<any>): any {
+    beforeBuildSchema(builder: AbstractSchemaBuilder<any>, rootBuilder: AbstractSchemaBuilder<any>): any {
         // Empty function to conform to Plugin interface
     }
 

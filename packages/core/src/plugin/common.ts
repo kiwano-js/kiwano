@@ -53,8 +53,8 @@ export interface Plugin {
     beforeBuild?(rootBuilder: AbstractSchemaBuilder<any>);
     afterBuild?(rootBuilder: AbstractSchemaBuilder<any>, schema: GraphQLSchema);
 
-    beforeBuildSchema?(builder: AbstractSchemaBuilder<any>);
-    afterBuildSchema?(builder: AbstractSchemaBuilder<any>, schema: GraphQLSchema);
+    beforeBuildSchema?(builder: AbstractSchemaBuilder<any>, rootBuilder: AbstractSchemaBuilder<any>);
+    afterBuildSchema?(builder: AbstractSchemaBuilder<any>, schema: GraphQLSchema, rootBuilder: AbstractSchemaBuilder<any>);
 
     beforeBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo);
     afterBuildObjectType?(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo, objectType: GraphQLObjectType);

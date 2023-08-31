@@ -147,12 +147,12 @@ export class MultiPlugin implements Plugin {
         this.executeSync('afterBuild', plugin => plugin.afterBuild(rootBuilder, schema));
     }
 
-    beforeBuildSchema(builder: SchemaBuilder) {
-        this.executeSync('beforeBuildSchema', plugin => plugin.beforeBuildSchema(builder));
+    beforeBuildSchema(builder: SchemaBuilder, rootBuilder: SchemaBuilder) {
+        this.executeSync('beforeBuildSchema', plugin => plugin.beforeBuildSchema(builder, rootBuilder));
     }
 
-    afterBuildSchema(builder: SchemaBuilder, schema: GraphQLSchema) {
-        this.executeSync('afterBuildSchema', plugin => plugin.afterBuildSchema(builder, schema));
+    afterBuildSchema(builder: SchemaBuilder, schema: GraphQLSchema, rootBuilder: SchemaBuilder) {
+        this.executeSync('afterBuildSchema', plugin => plugin.afterBuildSchema(builder, schema, rootBuilder));
     }
 
     beforeBuildObjectType(builder: ObjectTypeBuilder, context: BuildContext, info: ObjectTypeBuilderInfo) {

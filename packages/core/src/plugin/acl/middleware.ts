@@ -39,18 +39,14 @@ export function expressAclMiddleware(acl: AclPlugin, config: AclValidateConfigTy
     }
 }
 
-export function graphQLAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null): Middleware {
+export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options: AclMiddlewareOptions = null): Middleware {
 
     const fullOptions = getOptions(options);
 
     return (resolve, root, args, context, info) => {
 
         const pathResource = getPathResource(info.path);
-        let parsedConfig = config;
-
-        if(!config){
-            parsedConfig = { resource: pathResource };
-        }
+        let parsedConfig = { resource: `${schemaName}:${pathResource}` };
 
         const role = get(context, fullOptions.rolePath) ?? null;
         const allowed = acl.validate(parsedConfig, role);

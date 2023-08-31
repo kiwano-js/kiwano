@@ -213,24 +213,26 @@ export class AclPlugin implements Plugin {
         return this;
     }
 
-    beforeBuildSchema(builder: SchemaBuilder) {
+    beforeBuildSchema(builder: SchemaBuilder, rootBuilder: SchemaBuilder) {
 
         // Add middleware
-        builder.use(graphQLAclMiddleware(this, null, this._options));
+        builder.use(graphQLAclMiddleware(this, rootBuilder.name || rootBuilder.tag.toString(), this._options));
     }
 
-    afterBuildSchema(builder: SchemaBuilder, schema: GraphQLSchema) {
+    afterBuildSchema(builder: SchemaBuilder, schema: GraphQLSchema, rootBuilder: SchemaBuilder) {
 
         // Add rules
+        const schemaId = rootBuilder.name || rootBuilder.tag.toString();
+
         for(let type of builder.getObjectTypes()){
 
             const typeInfo = type.info();
-            this.addRules(`${type.name}.*`, typeInfo.allowedRoles, typeInfo.deniedRoles);
+            this.addRules(`${schemaId}:${type.name}.*`, typeInfo.allowedRoles, typeInfo.deniedRoles);
 
             for(let field of type.info().fields){
 
                 const fieldInfo = field.info()
-                this.addRules(`${type.name}.${field.name}`, fieldInfo.allowedRoles, fieldInfo.deniedRoles);
+                this.addRules(`${schemaId}:${type.name}.${field.name}`, fieldInfo.allowedRoles, fieldInfo.deniedRoles);
             }
         }
     }

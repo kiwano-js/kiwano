@@ -33,6 +33,7 @@ const DefaultScalars = [GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean,
 export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
     protected _name?: string;
+    protected _tag: number;
 
     protected _plugins: Plugin[] = [];
 
@@ -69,6 +70,8 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     constructor(name: string=null) {
 
         this._name = name;
+        this._tag = Math.round(Math.random() * 1000000);
+
         this._addDefaultScalars();
     }
 
@@ -387,6 +390,11 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         return resolveName(this._name);
     }
 
+    get tag(): number {
+
+        return this._tag;
+    }
+
     async finalize(rootSchema?: AbstractSchemaBuilder<any>){
 
         const resolvedRootSchema = rootSchema || this;
@@ -439,18 +447,24 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         }
 
         // Apply rules
-        for(let objectType of this.getObjectTypes()){
+        for(let objectType of Array.from(this._objectTypes.values())){
             objectType.allow(...Array.from(this._allowedRoles)).deny(...Array.from(this._deniedRoles));
         }
 
+        const fullAllowedQueryRoles = [...Array.from(this._allowedRoles), ...Array.from(this._allowedQueryRoles)];
+        const fullDeniedQueryRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedQueryRoles)];
+
         for(let queryField of this._queryObject.info().fields){
-            queryField.allow(...Array.from(this._allowedQueryRoles)).deny(...Array.from(this._deniedQueryRoles));
+            queryField.allow(...fullAllowedQueryRoles).deny(...fullDeniedQueryRoles);
         }
 
         if(this._mutationObject){
 
+            const fullAllowedMutationRoles = [...Array.from(this._allowedRoles), ...Array.from(this._allowedMutationRoles)];
+            const fullDeniedMutationRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedMutationRoles)];
+
             for(let mutationField of this._mutationObject.info().fields){
-                mutationField.allow(...Array.from(this._allowedMutationRoles)).deny(...Array.from(this._deniedMutationRoles));
+                mutationField.allow(...fullAllowedMutationRoles).deny(...fullDeniedMutationRoles);
             }
         }
 
@@ -499,9 +513,10 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
     async buildSchema(resolvedTypes: Map<string, GraphQLType>, rootSchema?: AbstractSchemaBuilder<any>): Promise<GraphQLSchema> {
 
-        this._executePluginsSync('beforeBuildSchema', plugin => plugin.beforeBuildSchema(this));
-
         const resolvedRootSchema = rootSchema || this;
+
+        this._executePluginsSync('beforeBuildSchema', plugin => plugin.beforeBuildSchema(this, resolvedRootSchema));
+
         const context = new BuildContext(this, resolvedRootSchema, resolvedTypes);
 
         // Schema
@@ -530,7 +545,7 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             schemas: [fullSchema, ...builtSubSchemas]
         });
 
-        this._executePluginsSync('afterBuildSchema', plugin => plugin.afterBuildSchema(this, mergedSchema));
+        this._executePluginsSync('afterBuildSchema', plugin => plugin.afterBuildSchema(this, mergedSchema, resolvedRootSchema));
 
         return mergedSchema;
     }
