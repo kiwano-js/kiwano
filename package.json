@@ -5,7 +5,7 @@
   "homepage": "https://github.com/kiwano-js/kiwano#readme",
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@8.4.0",
+  "packageManager": "pnpm@8.6.5",
   "author": {
     "name": "Bart Blok",
     "email": "bart@wittig.nl"
@@ -16,7 +16,6 @@
     "publish": "turbo run publish"
   },
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "engines": {
