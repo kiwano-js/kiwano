@@ -2,7 +2,7 @@ import { isString, clone } from 'lodash'
 
 import { GraphQLEnumType } from "graphql/type/definition";
 
-import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError, builderInfoExtensionName } from "./Builder";
+import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError } from "./Builder";
 import { EnumValueBuilder } from "./enumValue";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
@@ -119,7 +119,6 @@ export class EnumTypeBuilder extends Builder<GraphQLEnumType> {
             description: this._description,
             values: builtValues,
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             }
         });

@@ -16,7 +16,6 @@ import {
 } from "@kiwano/core";
 
 export interface EntityFieldInfo {
-    fieldInfo: FieldBuilderInfo
     entityFieldType: EntityFieldType
     resolverOptions: AnyObject
 }

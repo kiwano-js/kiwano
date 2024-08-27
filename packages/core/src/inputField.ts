@@ -3,7 +3,7 @@ import { isString, clone } from 'lodash'
 import { GraphQLInputFieldConfig, GraphQLInputType } from "graphql/type/definition";
 import { GraphQLList, GraphQLNonNull } from "graphql";
 
-import Builder, { BuildContext, FinalizeContext, builderInfoExtensionName, BuilderName } from "./Builder";
+import Builder, { BuildContext, FinalizeContext, BuilderName } from "./Builder";
 import { Plugin } from "./plugin";
 import { resolveType } from "./util";
 
@@ -128,7 +128,6 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
             type,
             description: this._description,
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             }
         }

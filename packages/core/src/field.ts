@@ -5,7 +5,7 @@ import { GraphQLOutputType, GraphQLNonNull, GraphQLList } from "graphql";
 
 import { ArgumentBuilder, ArgumentType } from "./argument";
 import { ObjectTypeBuilder } from "./objectType";
-import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError, builderInfoExtensionName } from "./Builder";
+import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
 import { resolveType } from "./util";
@@ -214,7 +214,6 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             extensions: {
                 allowedRoles: Array.from(this._allowedRoles),
                 deniedRoles: Array.from(this._deniedRoles),
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             },
             resolve: resolver

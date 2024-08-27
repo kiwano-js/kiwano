@@ -1,7 +1,7 @@
 import { GraphQLEnumValueConfig } from "graphql/type/definition";
 import { clone } from "lodash";
 
-import Builder, { BuildContext, FinalizeContext, builderInfoExtensionName, BuilderName } from "./Builder";
+import Builder, { BuildContext, FinalizeContext, BuilderName } from "./Builder";
 import { Plugin } from "./plugin";
 
 export interface EnumValueBuilderInfo {
@@ -65,7 +65,6 @@ export class EnumValueBuilder extends Builder<GraphQLEnumValueConfig> {
             value: this._value,
             description: this._description,
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             }
         };

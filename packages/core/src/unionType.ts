@@ -3,7 +3,7 @@ import { GraphQLOutputType } from "graphql";
 
 import { isString, clone } from 'lodash'
 
-import Builder, { BuildContext, builderInfoExtensionName, BuilderName, FinalizeContext } from "./Builder";
+import Builder, { BuildContext, BuilderName, FinalizeContext } from "./Builder";
 import { Plugin } from "./plugin";
 
 export interface UnionTypeBuilderInfo {
@@ -88,7 +88,6 @@ export class UnionTypeBuilder extends Builder<GraphQLUnionType> {
                 return resolvedTypes;
             },
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             }
         });

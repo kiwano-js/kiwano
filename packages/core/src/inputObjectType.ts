@@ -4,7 +4,7 @@ import { GraphQLInputObjectType } from "graphql";
 import { GraphQLInputType } from "graphql/type/definition";
 
 import { InputFieldBuilder, InputFieldType } from "./inputField";
-import Builder, { BuildContext, BuilderName, BuilderError, builderInfoExtensionName, FinalizeContext } from "./Builder";
+import Builder, { BuildContext, BuilderName, BuilderError, FinalizeContext } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
 
@@ -94,7 +94,6 @@ export class InputObjectTypeBuilder extends Builder<GraphQLInputType> {
             name: this.name,
             description: this._description,
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             },
             fields: () => {

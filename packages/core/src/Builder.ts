@@ -13,8 +13,6 @@ export class BuilderError extends FrameworkError {}
 export type BuilderOrConfiguratorOrName<T> = T | Configurator<T> | string;
 export type BuilderName = string | (() => string);
 
-export const builderInfoExtensionName = "$builder";
-
 export default abstract class Builder<RT> {
 
     protected _name?: BuilderName;

@@ -3,7 +3,7 @@ import { isString, clone } from 'lodash'
 import { GraphQLArgumentConfig, GraphQLInputType } from "graphql/type/definition";
 import { GraphQLNonNull, GraphQLList } from "graphql";
 
-import Builder, { BuildContext, FinalizeContext, builderInfoExtensionName, BuilderName } from "./Builder";
+import Builder, { BuildContext, FinalizeContext, BuilderName } from "./Builder";
 import { Plugin } from "./plugin";
 import { resolveType } from "./util";
 
@@ -128,7 +128,6 @@ export class ArgumentBuilder extends Builder<GraphQLArgumentConfig> {
             type,
             description: this._description,
             extensions: {
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             }
         }

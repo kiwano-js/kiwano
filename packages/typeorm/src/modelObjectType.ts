@@ -23,8 +23,6 @@ import { RelationResolverOptions } from "./resolver";
 
 export interface ModelObjectTypeBuilderOptions extends ModelBuilderOptions<BuilderName> {}
 
-export const modelExtensionName = "$model";
-
 export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
     protected _relationFieldNames: Set<string>;
@@ -166,8 +164,6 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
             field.extension(entityFieldTypeExtensionName, EntityFieldType.RELATION);
         }
-
-        this.extension(modelExtensionName, this._model);
     }
 }
 

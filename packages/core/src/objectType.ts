@@ -3,7 +3,7 @@ import { clone, isString } from 'lodash'
 import { GraphQLObjectType } from "graphql";
 
 import { FieldBuilder, FieldType } from "./field";
-import Builder, { BuildContext, BuilderName, BuilderError, FinalizeContext, builderInfoExtensionName } from "./Builder";
+import Builder, { BuildContext, BuilderName, BuilderError, FinalizeContext } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
 
@@ -126,7 +126,6 @@ export class ObjectTypeBuilder extends Builder<GraphQLObjectType> {
             extensions: {
                 allowedRoles: Array.from(this._allowedRoles),
                 deniedRoles: Array.from(this._deniedRoles),
-                [builderInfoExtensionName]: this.info(),
                 ...Object.fromEntries(this._extensions)
             },
             fields: () => {

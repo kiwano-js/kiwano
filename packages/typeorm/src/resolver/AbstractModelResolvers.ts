@@ -1,17 +1,11 @@
 import { isFunction } from 'lodash'
 
-import { defaultFieldResolver, GraphQLResolveInfo } from "graphql";
+import { defaultFieldResolver, GraphQLResolveInfo } from 'graphql';
 
-import {
-    AnyObject,
-    builderInfoExtensionName, EntityFieldType,
-    entityFieldTypeExtensionName, FieldBuilderInfo,
-    ResolverError,
-    ResolverInfo
-} from '@kiwano/core';
+import { AnyObject, EntityFieldType, entityFieldTypeExtensionName, ResolverError, ResolverInfo } from '@kiwano/core';
 
-import { resolverOptionsExtensionName } from "../modelSchema";
-import { EntityFieldInfo } from "./common";
+import { resolverOptionsExtensionName } from '../modelSchema';
+import { EntityFieldInfo } from './common';
 
 export default abstract class AbstractModelResolvers<ModelType, SourceType=any> {
 
@@ -39,10 +33,9 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
 
                     if(fieldType){
 
-                        const fieldInfo = fieldType.extensions[builderInfoExtensionName] as FieldBuilderInfo;
                         const entityFieldType = fieldType.extensions[entityFieldTypeExtensionName] as EntityFieldType;
 
-                        if(fieldInfo && entityFieldType){
+                        if(entityFieldType){
 
                             let resolverOptions = fieldType.extensions[resolverOptionsExtensionName];
                             if(isFunction(resolverOptions)){
@@ -55,8 +48,7 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
 
                             return target.$executeResolver({ source, args, context, info }, {
                                 entityFieldType,
-                                resolverOptions,
-                                fieldInfo
+                                resolverOptions
                             });
                         }
                     }
