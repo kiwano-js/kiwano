@@ -1,6 +1,6 @@
 {
   "name": "kiwano",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -34,6 +34,6 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
-    "@kiwano/core": "^1.4.0"
+    "@kiwano/core": "^2.0.0"
   }
 }
