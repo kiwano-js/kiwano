@@ -1,4 +1,4 @@
-import { defaults, isString }  from "lodash";
+import { defaults, isArray, isString } from 'lodash';
 
 import { GraphQLString } from "graphql";
 
@@ -26,38 +26,40 @@ import { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, Relat
 export const searchPluginOriginalTypeExtensionName = "$searchPluginOriginalType";
 
 export enum SearchMode {
-    CONTAINS, STARTS, ENDS
+    CONTAINS, STARTS, ENDS, FULL_TEXT
 }
 
 export interface ISearchFilterPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
 
 export interface SearchFilterPluginRelationField {
     relation: string
-    relationField: string
+    relationFields: string[]
 }
 
 export interface SearchFilterPluginHooksOptions {
     argumentName: string
     typeFields: Map<string, Set<SearchFieldConfig>>
-    searchMode: SearchMode
 }
 
 export interface SearchFilterPluginOptions extends CoreSearchFilterPluginOptions {
-    fields?: string[]
-    relations?: SearchFilterPluginRelationField[]
+    configs?: SearchFieldConfig[]
     exclude?: string[]
     include?: string[]
-    searchMode?: SearchMode
+
 }
 
 export interface SearchFieldConfig {
-    field?: string,
+    fields?: string[]
     relation?: SearchFilterPluginRelationField
+    options?: SearchFieldOptions
 }
 
-export const defaultOptions: SearchFilterPluginOptions = {
-    searchMode: SearchMode.CONTAINS
+export interface SearchFieldOptions {
+    mode: SearchMode
+    sortRelevance?: boolean
 }
+
+export const defaultOptions: SearchFilterPluginOptions = {}
 
 export const allowedSearchTypes: FieldType[] = ['String', GraphQLString];
 
@@ -136,6 +138,8 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
             relationAliasMap.set(relation, alias);
         }
 
+        let sorts: string[] = [];
+
         builder.andWhere(new Brackets(qb => {
 
             for(let field of fields){
@@ -143,17 +147,28 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
                 let clause = null;
 
                 if(field.relation){
-                    clause = this.getWhereClause(relationAliasMap.get(field.relation.relation), field.relation.relationField, paramName);
+                    clause = this.getWhereClause(relationAliasMap.get(field.relation.relation), field.relation.relationFields, paramName, field.options);
                 }
-                else if(field.field) {
-                    clause = this.getWhereClause(metadata.name, field.field, paramName);
+                else if(field.fields) {
+                    clause = this.getWhereClause(metadata.name, field.fields, paramName, field.options);
                 }
 
                 if(clause){
+
                     qb.orWhere(clause, { [paramName]: searchQuery });
+
+                    if(field.options?.sortRelevance === true && field.options?.mode === SearchMode.FULL_TEXT){
+                        sorts.push(clause);
+                    }
                 }
             }
         }))
+
+        for(let sort of sorts){
+
+            builder.addOrderBy(sort, 'DESC');
+            builder.setParameter(paramName, searchQuery);
+        }
     }
 
     addRelationJoin(builder: SelectQueryBuilder<any>, relation: string, metadata: EntityMetadata){
@@ -173,19 +188,50 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         return joinAliasName;
     }
 
-    getWhereClause(alias: string, field: string, paramName: string){
+    getWhereClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions){
 
-        const searchMode = this._options.searchMode;
-        let searchValue = `CONCAT('%', :${paramName}, '%')`;
+        const searchMode = options?.mode || SearchMode.CONTAINS;
 
-        if(searchMode === SearchMode.STARTS){
-            searchValue = `CONCAT(:${paramName}, '%')`;
+        if(searchMode === SearchMode.FULL_TEXT){
+
+            const fieldMatches = fields.map(field => this.getWhereClauseField(alias, field));
+
+            return `MATCH (${fieldMatches.join(', ')}) AGAINST (:${paramName})`
         }
-        else if(searchMode === SearchMode.ENDS){
-            searchValue = `CONCAT('%', :${paramName})`;
-        }
+        else {
 
-        return `${this.getWhereClauseField(alias, field)} LIKE ${searchValue}`;
+            let searchValue = `CONCAT('%', :${paramName}, '%')`;
+
+            if(searchMode === SearchMode.STARTS) {
+                searchValue = `CONCAT(:${paramName}, '%')`;
+            }
+            else if(searchMode === SearchMode.ENDS) {
+                searchValue = `CONCAT('%', :${paramName})`;
+            }
+
+            let likeFields = null;
+
+            if(fields.length === 1){
+                likeFields = this.getWhereClauseField(alias, fields[0]);
+            }
+            else {
+
+                const leftParts: string[] = [];
+
+                for(let [index, field] of fields.entries()){
+
+                    if(index > 0) {
+                        leftParts.push('" "');
+                    }
+
+                    leftParts.push(this.getWhereClauseField(alias, field));
+                }
+
+                likeFields = `CONCAT(${leftParts.join(', ')})`;
+            }
+
+            return `${likeFields} LIKE ${searchValue}`;
+        }
     }
 
     getWhereClauseField(alias: string, field: string){
@@ -209,8 +255,7 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         super();
         this._options = defaults(options || {}, defaultOptions, coreDefaultOptions, {
             exclude: [],
-            include: [],
-            relations: []
+            include: []
         });
     }
 
@@ -220,19 +265,29 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         return this;
     }
 
-    field(...fieldNames: string[]): this {
+    field(fieldNames: string|string[], options?: SearchFieldOptions): this {
 
-        if(!this._options.fields){
-            this._options.fields = [];
+        if(!this._options.configs){
+            this._options.configs = [];
         }
 
-        fieldNames.forEach(name => this._options.fields.push(name));
+        const fields = isArray(fieldNames) ? fieldNames : [fieldNames];
+        this._options.configs.push({ fields, options });
+
         return this;
     }
 
-    relation(relation: string, relationField: string): this {
+    relation(relation: string, relationFields: string|string[], options?: SearchFieldOptions): this {
 
-        this._options.relations.push({ relation, relationField });
+        if(!this._options.configs){
+            this._options.configs = [];
+        }
+
+        const fields: string[] = isArray(relationFields) ? relationFields : [relationFields];
+
+        const relationConfig: SearchFilterPluginRelationField = { relation, relationFields: fields };
+        this._options.configs.push({ relation: relationConfig, options });
+
         return this;
     }
 
@@ -248,30 +303,6 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
         return this;
     }
 
-    searchMode(mode: SearchMode): this {
-
-        this._options.searchMode = mode;
-        return this;
-    }
-
-    starts(): this {
-
-        this.searchMode(SearchMode.STARTS);
-        return this;
-    }
-
-    ends(): this {
-
-        this.searchMode(SearchMode.ENDS);
-        return this;
-    }
-
-    contains(): this {
-
-        this.searchMode(SearchMode.CONTAINS);
-        return this;
-    }
-
     beforeBuildField(builder: FieldBuilder, context: BuildContext, info: FieldBuilderInfo) {
 
         super.beforeBuildField(builder, context, info);
@@ -284,7 +315,7 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
 
         let targetObjectType: ObjectTypeBuilder;
 
-        if(!this._options.fields){
+        if(!this._options.configs){
 
             targetObjectType = context.rootSchema.findType(typeName, true) as ObjectTypeBuilder;
             if(!targetObjectType){
@@ -296,7 +327,7 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
             }
         }
 
-        let fieldNames = new Set<string>()
+        let configs: SearchFieldConfig[] = [...(this._options.configs || [])];
 
         if(targetObjectType){
 
@@ -304,29 +335,20 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
 
                 const fieldInfo = field.info();
                 if(!fieldInfo.list && allowedSearchTypes.indexOf(fieldInfo.type) >= 0){
-                    fieldNames.add(field.name);
+                    configs.push({ fields: [field.name] });
                 }
             }
         }
-        else if(this._options.fields){
-            this._options.fields.forEach(field => fieldNames.add(field));
-        }
 
         if(this._options.include){
-            this._options.include.forEach(field => fieldNames.add(field));
+            this._options.include.forEach(field => configs.push({ fields: [field] }));
         }
 
         if(this._options.exclude){
-            this._options.exclude.forEach(field => fieldNames.delete(field));
+            configs = configs.filter(conf => !conf.fields?.some(field => this._options.exclude.includes(field)));
         }
 
-        const fieldConfigs: SearchFieldConfig[] = Array.from(fieldNames).map(fieldName => ({ field: fieldName }));
-        const typeFields = new Set<SearchFieldConfig>(fieldConfigs);
-
-        if(this._options.relations){
-            this._options.relations.forEach(relation => typeFields.add({ relation }));
-        }
-
+        const typeFields = new Set<SearchFieldConfig>(configs);
         this._typeFields.set(typeName, typeFields);
 
         builder.extension(searchPluginOriginalTypeExtensionName, typeName);
@@ -346,7 +368,6 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
 
         const hooksOptions: SearchFilterPluginHooksOptions = {
             argumentName: this._options.argumentName,
-            searchMode: this._options.searchMode,
             typeFields: this._typeFields
         };
 

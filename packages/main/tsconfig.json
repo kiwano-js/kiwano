@@ -5,6 +5,7 @@
         "module": "commonjs",
         "target": "es2017",
         "moduleResolution": "node",
+        "skipLibCheck": true,
         "declaration": true,
         "sourceMap": false,
         "esModuleInterop": true,
