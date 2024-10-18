@@ -175,6 +175,14 @@ export function ensureInstantiated(input: object, ...args){
     return input;
 }
 
+export function getAclExtension(allowed: Set<string>, denied: Set<string>) {
+
+    return {
+        allowedRoles: Array.from(allowed).join(','),
+        deniedRoles: Array.from(denied).join(','),
+    }
+}
+
 export function camelize(text) {
 
     return text.replace(/^([A-Z])|[\s-_]+(\w)/g, function(match, p1, p2) {

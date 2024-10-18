@@ -8,7 +8,7 @@ import { ObjectTypeBuilder } from "./objectType";
 import Builder, { BuildContext, FinalizeContext, BuilderName, BuilderError } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
-import { resolveType } from "./util";
+import { getAclExtension, resolveType } from './util';
 
 export interface FieldBuilderInfo {
     name: string
@@ -212,8 +212,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             description: this._description,
             args: builtArgs,
             extensions: {
-                allowedRoles: Array.from(this._allowedRoles),
-                deniedRoles: Array.from(this._deniedRoles),
+                ...getAclExtension(this._allowedRoles, this._deniedRoles),
                 ...Object.fromEntries(this._extensions)
             },
             resolve: resolver

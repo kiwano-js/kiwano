@@ -6,6 +6,7 @@ import { FieldBuilder, FieldType } from "./field";
 import Builder, { BuildContext, BuilderName, BuilderError, FinalizeContext } from "./Builder";
 import { Configurator } from "./common";
 import { Plugin } from "./plugin";
+import { getAclExtension } from './util';
 
 export interface ObjectTypeBuilderInfo {
     name: string
@@ -124,8 +125,7 @@ export class ObjectTypeBuilder extends Builder<GraphQLObjectType> {
             name: this.name,
             description: this._description,
             extensions: {
-                allowedRoles: Array.from(this._allowedRoles),
-                deniedRoles: Array.from(this._deniedRoles),
+                ...getAclExtension(this._allowedRoles, this._deniedRoles),
                 ...Object.fromEntries(this._extensions)
             },
             fields: () => {
