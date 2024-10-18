@@ -8,7 +8,9 @@ import { EntityType } from "./entitySchema";
 export class CreateInputObjectTypeBuilder extends InputObjectTypeBuilder {
 
     protected _entityObjectType: EntityType;
+
     protected _exclude = new Set<string>();
+    protected _include = new Set<string>();
 
     constructor(name: BuilderName, entityType: EntityType){
         super(name);
@@ -18,6 +20,12 @@ export class CreateInputObjectTypeBuilder extends InputObjectTypeBuilder {
     exclude(...fieldNames: string[]): this {
 
         fieldNames.forEach(name => this._exclude.add(name));
+        return this;
+    }
+
+    include(...fieldNames: string[]): this {
+
+        fieldNames.forEach(name => this._include.add(name));
         return this;
     }
 
@@ -33,7 +41,12 @@ export class CreateInputObjectTypeBuilder extends InputObjectTypeBuilder {
         for(let field of entityInfo.fields){
 
             const fieldInfo = field.info();
-            if(this._exclude.has(fieldInfo.name) || !isTypeInput(fieldInfo.type, context.rootSchema) || isFieldId(fieldInfo) || existingFieldNames.indexOf(fieldInfo.name) >= 0){
+
+            if(!isTypeInput(fieldInfo.type, context.rootSchema) || isFieldId(fieldInfo) || existingFieldNames.indexOf(fieldInfo.name) >= 0){
+                continue;
+            }
+
+            if(this._exclude.has(fieldInfo.name) || (this._include.size > 0 && !this._include.has(fieldInfo.name))){
                 continue;
             }
 

@@ -13,7 +13,7 @@ export interface EqualsFilterPluginOptions {
     multi?: boolean
     fields?: EqualsFilterPluginFieldConfig[]
     exclude?: string[]
-    include?: EqualsFilterPluginFieldConfig[]
+    include?: string[]
     argumentName?: string,
     inputName?: (typeName: string) => string
 }
@@ -65,9 +65,9 @@ export class EqualsFilterPlugin implements Plugin {
         return this;
     }
 
-    include(name: string, type: InputFieldType): this {
+    include(...fieldNames: string[]): this {
 
-        this._options.include.push({ name, type });
+        fieldNames.forEach(name => this._options.include.push(name));
         return this;
     }
 
@@ -124,21 +124,23 @@ export class EqualsFilterPlugin implements Plugin {
             for(let field of targetObjectType.info().fields){
 
                 const fieldInfo = field.info();
-                if(!fieldInfo.list && isTypeInput(fieldInfo.type, context.rootSchema)){
 
-                    fields.add({
-                        name: field.name,
-                        type: fieldInfo.type as InputFieldType
-                    });
+                if(fieldInfo.list || !isTypeInput(fieldInfo.type, context.rootSchema)){
+                    continue;
                 }
+
+                if(this._options.include?.length && !this._options.include.includes(field.name)){
+                    continue;
+                }
+
+                fields.add({
+                    name: field.name,
+                    type: fieldInfo.type as InputFieldType
+                });
             }
         }
         else if(this._options.fields){
             this._options.fields.forEach(field => fields.add(field));
-        }
-
-        if(this._options.include){
-            this._options.include.forEach(field => fields.add(field));
         }
 
         const extraFields = this._getExtraFieldConfigs(context, name, targetObjectType);
