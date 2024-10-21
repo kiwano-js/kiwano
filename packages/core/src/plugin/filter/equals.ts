@@ -11,6 +11,7 @@ import { BuildContext } from "../../Builder";
 
 export interface EqualsFilterPluginOptions {
     multi?: boolean
+    manual?: boolean
     fields?: EqualsFilterPluginFieldConfig[]
     exclude?: string[]
     include?: string[]
@@ -25,6 +26,7 @@ export interface EqualsFilterPluginFieldConfig {
 
 export const defaultEqualsFilterPluginOptions: EqualsFilterPluginOptions = {
     multi: false,
+    manual: false,
     argumentName: 'filter',
     inputName: typeName => `${typeName}EqualsFilter`,
 }
@@ -46,6 +48,14 @@ export class EqualsFilterPlugin implements Plugin {
     multi(multi: boolean = true): this {
 
         this._options.multi = multi;
+        return this;
+    }
+
+    manual(): this;
+    manual(manual: boolean ): this;
+    manual(manual: boolean = true): this {
+
+        this._options.manual = manual;
         return this;
     }
 
@@ -94,7 +104,7 @@ export class EqualsFilterPlugin implements Plugin {
 
         let targetObjectType: ObjectTypeBuilder;
 
-        if(!this._options.fields){
+        if(!this._options.manual){
 
             targetObjectType = context.rootSchema.findType(typeName, true) as ObjectTypeBuilder;
             if(!targetObjectType){
@@ -139,7 +149,8 @@ export class EqualsFilterPlugin implements Plugin {
                 });
             }
         }
-        else if(this._options.fields){
+
+        if(this._options.fields){
             this._options.fields.forEach(field => fields.add(field));
         }
 
