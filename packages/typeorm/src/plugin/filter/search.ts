@@ -26,7 +26,16 @@ import { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, Relat
 export const searchPluginOriginalTypeExtensionName = "$searchPluginOriginalType";
 
 export enum SearchMode {
-    CONTAINS, STARTS, ENDS, FULL_TEXT
+    CONTAINS, STARTS, ENDS,
+
+    /**
+     * @deprecated Use `fullText` in options instead
+     */
+    FULL_TEXT
+}
+
+export enum SearchFullTextModifier {
+    BOOLEAN, NATURAL_LANGUAGE
 }
 
 export interface ISearchFilterPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
@@ -55,7 +64,9 @@ export interface SearchFieldConfig {
 }
 
 export interface SearchFieldOptions {
-    mode: SearchMode
+    mode?: SearchMode
+    fullText?: boolean
+    modifier?: SearchFullTextModifier
     sortRelevance?: boolean
 }
 
@@ -121,7 +132,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
     applySearch(builder: SelectQueryBuilder<any>, fields: Set<SearchFieldConfig>, searchQuery: string, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
 
-        const paramName = 'searchQuery';
+        const paramNameBase = 'searchQuery';
 
         const relations = new Set(
             Array.from(fields)
@@ -138,11 +149,17 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
             relationAliasMap.set(relation, alias);
         }
 
-        let sorts: string[] = [];
+        let sorts: { clause: string, paramName: string, paramValue: string }[] = [];
 
         builder.andWhere(new Brackets(qb => {
 
+            let fieldIndex = 1;
+
             for(let field of fields){
+
+                const fullTextMode = this.isOptionsFullText(field.options);
+                const fieldSearchQuery = this.modifySearchQuery(searchQuery, field, metadata, info);
+                const paramName = `${paramNameBase}${fieldIndex}`;
 
                 let clause = null;
 
@@ -155,20 +172,50 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
                 if(clause){
 
-                    qb.orWhere(clause, { [paramName]: searchQuery });
+                    qb.orWhere(clause, { [paramName]: fieldSearchQuery });
 
-                    if(field.options?.sortRelevance === true && field.options?.mode === SearchMode.FULL_TEXT){
-                        sorts.push(clause);
+                    if(field.options?.sortRelevance === true && fullTextMode){
+
+                        sorts.push({ clause, paramName, paramValue: fieldSearchQuery });
                     }
                 }
+
+                fieldIndex++;
             }
         }))
 
         for(let sort of sorts){
 
-            builder.addOrderBy(sort, 'DESC');
-            builder.setParameter(paramName, searchQuery);
+            builder.addOrderBy(sort.clause, 'DESC');
+            builder.setParameter(sort.paramName, sort.paramValue);
         }
+    }
+
+    modifySearchQuery(searchQuery: string, field: SearchFieldConfig, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
+
+        const isFullText = this.isOptionsFullText(field.options);
+        const mode = field.options?.mode;
+
+        if(isFullText && field.options?.modifier === SearchFullTextModifier.BOOLEAN){
+
+            const safeQuery = searchQuery.replace(/[^a-zA-Z0-9 ]/g, '');
+
+            if(mode === SearchMode.STARTS){
+
+                return `${safeQuery}*`
+            }
+            else {
+
+                return safeQuery.split(' ').map(word => `+'${word}'`).join(' ');
+            }
+        }
+
+        return searchQuery;
+    }
+
+    isOptionsFullText(options: SearchFieldOptions){
+
+        return options?.mode === SearchMode.FULL_TEXT || options?.fullText == true;
     }
 
     addRelationJoin(builder: SelectQueryBuilder<any>, relation: string, metadata: EntityMetadata){
@@ -191,12 +238,26 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
     getWhereClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions){
 
         const searchMode = options?.mode || SearchMode.CONTAINS;
+        const fullTextMode = this.isOptionsFullText(options);
 
-        if(searchMode === SearchMode.FULL_TEXT){
+        if(fullTextMode){
+
+            const modifier = options?.modifier;
+
+            let againstValue = `:${paramName}`;
+
+            if(modifier === SearchFullTextModifier.BOOLEAN){
+
+                againstValue = `:${paramName} IN BOOLEAN MODE`;
+            }
+            else if(modifier === SearchFullTextModifier.NATURAL_LANGUAGE){
+
+                againstValue = `:${paramName} IN NATURAL LANGUAGE MODE`;
+            }
 
             const fieldMatches = fields.map(field => this.getWhereClauseField(alias, field));
 
-            return `MATCH (${fieldMatches.join(', ')}) AGAINST (:${paramName})`
+            return `MATCH (${fieldMatches.join(', ')}) AGAINST (${againstValue})`
         }
         else {
 
