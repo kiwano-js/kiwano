@@ -1,12 +1,14 @@
 # Object types & Fields
+
 Every schema consists of one or more Object types and Fields.
 Kiwano provides the `objectType` and `field` builders to configure these elements.
 
-All Kiwano type builders extend from the main `Builder` type. 
+All Kiwano type builders extend from the main `Builder` type.
 As a result, every builder constructor allows you to specify the name of the type you are creating.
 This name can ben either a string or a function that generates the name during build time.
 
 ## Object type
+
 A Kiwano `objectType` represents a GraphQL [Object type](https://graphql.org/graphql-js/object-types), consisting of one or more Fields.
 You can create an Object type by either using the `objectType` builder or adding it to your schema directly:
 
@@ -116,7 +118,7 @@ Sets the type of the field. The type can be provided in the constructor as well.
 
 `.nonNull([nonNull])`, `.list([list])` and `.nonNullList([nonNullList])`
 
-Specifies whether the Field is non-null, a list or a non-null list. 
+Specifies whether the Field is non-null, a list or a non-null list.
 Calling this method without an argument implies a default value of `true`.
 
 `.allow(...roles)`

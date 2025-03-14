@@ -1,7 +1,8 @@
 # Schema
+
 The `schema` builder is the main element of Kiwano, providing an interface to configure your GraphQL schema.
 
-Schemas builders can be created by using the `schema()` factory function. 
+Schemas builders can be created by using the `schema()` factory function.
 You can optionally provide a name for your schema as an argument, but this name is only used for [Entity Schemas](entity-schema/entity-schema.md)
 
 ```typescript
@@ -12,7 +13,7 @@ const mySchema = schema();
 
 > Note that the result of the `schema()` function is not a GraphQL schema for use in other libraries yet, use the `build()` method to generate the GraphQL schema for your configured builder.
 
-Your schema can be configured using the methods below, 
+Your schema can be configured using the methods below,
 Most importantly, elements can be added to you schema, like object types, query fields, input object types etc.
 Please make sure you've read the [Concepts](basics/concepts.md) section first for information about different ways to add elements to your schema.
 
@@ -46,7 +47,7 @@ schema.union(unionType('Animal').type('Dog', 'Cat'))
 
 `.enum(name, enum)`, `.enum(name, [configurator])` or `.enum(enumType)`
 
-Adds an enum-type to the schema, enum-types can be configured manually or automatically. 
+Adds an enum-type to the schema, enum-types can be configured manually or automatically.
 When using an automatic enum-type, the values of the passed enum object are added by Kiwano:
 
 ```typescript
@@ -73,7 +74,7 @@ As you can see, values can be configured as well. This enables you to add descri
 
 `.scalar(scalarType)`
 
-Use the `scalar()` method to add a scalar to your schema. 
+Use the `scalar()` method to add a scalar to your schema.
 You should pass a [GraphQLScalarType](https://graphql.org/graphql-js/type/#graphqlscalartype) here, which you can create manually or use a scalar provided by an external package.
 
 #### Query, Mutation
@@ -88,12 +89,12 @@ schema.query('users', '[User]', _ => _.description('Returns all users'))
 
 `.mutation(name, type, [configurator])` or `.mutation(mutationField)`
 
-Adds a `Mutation` field to the schema. 
+Adds a `Mutation` field to the schema.
 The root `Mutation` type is added to your schema automatically when you add one or more mutation fields to the schema.
 
 #### Resolvers, QueryResolvers, MutationResolvers
 
-These methods allow you to add a collection of resolvers to the schema. 
+These methods allow you to add a collection of resolvers to the schema.
 In addition to defining a resolver per field, you can bundle resolvers into a resolver class or object.
 This resolver class/object contains methods corresponding to the field names.
 You can specify all resolvers in one class and pass it to the `resolvers()` method, but you will likely use a specific class for both query-resolvers and mutation-resolvers.
@@ -154,7 +155,7 @@ This can be specified for all fields, query-fields and/or mutation-fields.
 All access-rule methods can receive as many arguments as you want, all provided roles are added to the specific list.
 The methods can be called multiple times, doing this doesn't replace existing roles but just adds the passed roles instead.
 
-Rules defined in specific object-types or fields take precedence over schema-defined rules. 
+Rules defined in specific object-types or fields take precedence over schema-defined rules.
 This allows you for example to first deny the entire schema to users with a specific role, but allow a specific field to that same role.
 In that case users with this role will only be able to use that specific field.
 
@@ -189,18 +190,18 @@ You should call this method only once, and you don't have to call this method on
 
 `.finalize()`
 
-Parts of your schema will need to be finalized before building. 
+Parts of your schema will need to be finalized before building.
 When using the TypeORM schema for example, fields in object types need to be generated based on the specified model.
 You shouldn't need to call this method yourself, Kiwano executes the `finalize()` method on all schema-elements automatically before building.
 
 #### Naming
 
 Kiwano provides automatic naming for schema elements, this is used extensively in [Entity Schemas](entity-schema/entity-schema.md) for example.
-The default schema however requires you to pass element names explicitly, so the provided naming strategy is not used by default. 
+The default schema however requires you to pass element names explicitly, so the provided naming strategy is not used by default.
 
 `.naming(strategy)`
 
-Attaches a naming strategy to the schema. 
+Attaches a naming strategy to the schema.
 This strategy is automatically added to all merged sub-schemas as well, so you just have to provide it once in the root-schema.
 
 > See [Naming](entity-schema/naming.md) for more information about naming strategies

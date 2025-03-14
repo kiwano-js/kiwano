@@ -1,48 +1,58 @@
 {
   "name": "@kiwano/core",
-  "version": "2.1.0",
-  "description": "",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run clean && npm run compile",
-    "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.json",
-    "watch": "tsc --watch --preserveWatchOutput -p tsconfig.json"
+  "version": "3.0.0",
+  "description": "Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations.",
+  "type": "module",
+  "author": {
+    "name": "Bart Blok",
+    "email": "bart@wittig.nl",
+    "url": "https://www.wittig.nl/"
   },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.14.0",
+    "pnpm": ">=10.6.2"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/ts/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "homepage": "https://github.com/kiwano-js/kiwano#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kiwano-js/kiwano.git"
   },
-  "files": [
-    "dist/**"
-  ],
-  "author": "Bart Blok <bart@wittig.nl>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/kiwano-js/kiwano/issues"
   },
-  "engines": {
-    "node": ">= 14.0.0"
-  },
-  "homepage": "https://github.com/kiwano-js/kiwano#readme",
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.17.0",
-    "graphql": "^16.8.1",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.4.3"
-  },
-  "dependencies": {
-    "@graphql-tools/schema": "^10.0.3",
-    "graphql-middleware": "^6.1.35",
-    "lodash": "^4.17.21",
-    "pluralize": "^8.0.0"
+  "scripts": {
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "test": "vitest run"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "@graphql-tools/schema": "^10.0.3",
+    "graphql-middleware": "^6.1.35",
+    "pluralize": "^8.0.0",
+    "es-toolkit": "^1.33.0"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.5.4",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
   }
 }

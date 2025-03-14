@@ -1,21 +1,18 @@
 {
-    "compilerOptions": {
-        "lib": ["es2020"],
-        "outDir": "./dist",
-        "module": "commonjs",
-        "target": "es2017",
-        "moduleResolution": "node",
-        "skipLibCheck": true,
-        "declaration": true,
-        "sourceMap": false,
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "pretty": true
+  "extends": "@total-typescript/tsconfig/bundler/dom/library",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
     },
-    "exclude": [
-        "**/node_modules",
-        "**/dist"
-    ],
-    "include": ["src/**/*"]
+    "types": ["./src/ts/types"],
+    "outDir": "./dist",
+    "sourceMap": true,
+    "sourceRoot": "./src/ts",
+    "strict": false
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["**/dist", "**/node_modules", "**/.*/"]
 }

@@ -1,0 +1,204 @@
+import { defaults } from "es-toolkit/compat";
+
+import type { SelectQueryBuilder, EntityMetadata } from "typeorm";
+
+import {
+    type BuildContext,
+    camelize,
+    type ConstructorType,
+    defaultSortPluginOptions as coreDefaultOptions,
+    ensureInstantiated,
+    type ObjectTypeBuilder,
+    type OptionalPromise,
+    PluginError,
+    type SortConfiguration,
+    SortPlugin as CoreSortPlugin,
+    type SortPluginOptions as CoreSortPluginOptions
+} from "@kiwano/core";
+
+import { addRelationJoin, type Plugin } from "../common";
+import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
+
+export interface ISortPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
+
+export interface SortPluginHooksOptions {
+    argumentName: string
+    relations: SortPluginRelationField[]
+    nullLast: boolean
+}
+
+export interface SortPluginRelationField {
+    relation: string
+    relationField: string
+    name: string
+}
+
+export interface SortPluginOptions extends CoreSortPluginOptions {
+    relations?: SortPluginRelationField[]
+    nullLast: boolean
+}
+
+export class SortPluginHooks implements ISortPluginHooks {
+
+    constructor(protected _options: SortPluginHooksOptions) {}
+
+    $modifyAllQuery(builder: SelectQueryBuilder<any>, info: AllResolverInfo<any>): OptionalPromise {
+
+        const sort = info.args[this._options.argumentName] as SortConfiguration<any>
+
+        if(sort){
+
+            const entityMetaData = info.options.dataSource.getMetadata(info.options.model);
+
+            this.beforeApplySort(builder, sort, entityMetaData, info);
+            this.applySort(builder, sort, entityMetaData, info);
+            this.afterApplySort(builder, sort, entityMetaData, info);
+        }
+    }
+
+    $modifyRelationManyQuery(relation: string, builder: SelectQueryBuilder<object>, info: RelationResolverInfo<any>): OptionalPromise {
+
+        const sort = info.args[this._options.argumentName] as SortConfiguration<any>
+
+        if(sort){
+
+            const metadata = info.options.dataSource.getMetadata(info.options.model);
+            const relationMeta = metadata.findRelationWithPropertyPath(relation);
+            const entityMetaData = relationMeta.inverseEntityMetadata;
+
+            this.beforeApplySort(builder, sort, entityMetaData, info);
+            this.applySort(builder, sort, entityMetaData, info);
+            this.afterApplySort(builder, sort, entityMetaData, info);
+        }
+    }
+
+    applySort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
+
+        const relationConfig = this._options.relations.find(relation => relation.name === config.field);
+
+        if(relationConfig){
+            this.applyRelationSort(builder, config, relationConfig, metadata);
+        }
+        else {
+            this.applyFieldSort(builder, config, metadata);
+        }
+    }
+
+    applyFieldSort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata){
+
+        if(this._options.nullLast){
+            builder.addOrderBy(`${metadata.name}.${config.field} IS NULL`);
+        }
+
+        builder.addOrderBy(`${metadata.name}.${config.field}`, config.direction);
+    }
+
+    applyRelationSort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, relationConfig: SortPluginRelationField, metadata: EntityMetadata){
+
+        const relationMeta = metadata.findRelationWithPropertyPath(relationConfig.relation);
+        if(!relationMeta){
+            throw new PluginError(`Relation "${relationConfig.relation}" in "${metadata.name}" not found`);
+        }
+
+        if(!relationMeta.isManyToOne){
+            throw new PluginError(`Relation "${relationConfig.relation}" not available for sorting, only many to one relations are supported`);
+        }
+
+        const joinAliasName = `SortPluginRelation${relationMeta.inverseEntityMetadata!.name}`;
+        addRelationJoin(builder, relationMeta, metadata.name, joinAliasName);
+
+        if(this._options.nullLast){
+            builder.addOrderBy(`${joinAliasName}.${relationConfig.relationField} IS NULL`);
+        }
+
+        builder.addOrderBy(`${joinAliasName}.${relationConfig.relationField}`, config.direction);
+    }
+
+    beforeApplySort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
+    afterApplySort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
+}
+
+export class SortPlugin extends CoreSortPlugin implements Plugin {
+
+    declare protected _options: SortPluginOptions;
+
+    protected _hooks: ISortPluginHooks | ConstructorType<ISortPluginHooks>;
+
+    constructor(options?: SortPluginOptions){
+
+        super();
+        this._options = defaults(options || {}, coreDefaultOptions, {
+            exclude: [],
+            include: [],
+            relations: [],
+            nullLast: false
+        });
+    }
+
+    relation(relation: string, relationField: string): this;
+    relation(relation: string, relationField: string, name: string);
+    relation(relation: string, relationField: string, name: string = null): this {
+
+        this._options.relations.push({
+            relation, relationField,
+            name: name || camelize(`${relation} ${relationField}`)
+        });
+
+        return this;
+    }
+
+    nullLast(): this;
+    nullLast(enabled = true): this {
+
+        this._options.nullLast = enabled;
+        return this;
+    }
+
+    hooks(hooks: ISortPluginHooks | ConstructorType<ISortPluginHooks>): this {
+
+        this._hooks = hooks;
+        return this;
+    }
+
+    getAllResolverHooks(): AllResolverBaseHooks<any, any>[] {
+
+        return [this._resolvedHooks];
+    }
+
+    getRelationResolverHooks(): RelationResolverBaseHooks<any, any, any>[] {
+
+        return [this._resolvedHooks];
+    }
+
+    protected get _resolvedHooks(){
+
+        const hooksOptions: SortPluginHooksOptions = {
+            argumentName: this._options.argumentName,
+            relations: this._options.relations,
+            nullLast: this._options.nullLast
+        };
+
+        if(this._hooks){
+            return ensureInstantiated(this._hooks, hooksOptions);
+        }
+        else {
+            return new SortPluginHooks(hooksOptions)
+        }
+    }
+
+    protected override _getExtraEnumValues(context: BuildContext, name: string, typeName: string, targetObjectType?: ObjectTypeBuilder): Set<string> {
+
+        if(this._options.relations){
+            return new Set<string>(this._options.relations.map(relation => relation.name));
+        }
+
+        return null;
+    }
+}
+
+export function sortPlugin(options?: SortPluginOptions): SortPlugin {
+
+    return new SortPlugin(options);
+}
+
+export default sortPlugin;

@@ -3,7 +3,7 @@
   - [Concepts](basics/concepts.md)
   - [Schema](basics/schema.md)
   - [Object types & fields](basics/types.md)
-    
+
 - Entity Schema
   - [Entity Schema](entity-schema/entity-schema.md)
   - [Naming](entity-schema/naming.md)
