@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/typeorm",
-  "version": "2.1.0",
+  "version": "2.2.0-beta.2",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
