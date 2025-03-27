@@ -33,6 +33,8 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
     protected _exclude: Set<string>;
 
+    protected _includeDeletedRelations = false;
+
     constructor(model: ModelType, dataSource: DataSource);
     constructor(model: ModelType, options: ModelObjectTypeBuilderOptions);
     constructor(model: ModelType, optionsOrDataSource?: ModelObjectTypeBuilderOptions | DataSource);
@@ -70,6 +72,14 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
         let resolvedName = isString(fieldOrName) ? fieldOrName as string : (fieldOrName as FieldBuilder).name;
         this._relationFieldNames.add(resolvedName);
 
+        return this;
+    }
+
+    includeDeletedRelations(): this;
+    includeDeletedRelations(includeDeletedRelations: boolean): this;
+    includeDeletedRelations(includeDeletedRelations: boolean = true): this {
+
+        this._includeDeletedRelations = includeDeletedRelations;
         return this;
     }
 
@@ -144,6 +154,10 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
 
             if(relationIsMany(relation)){
                 field.list();
+            }
+
+            if(this._includeDeletedRelations){
+                field.includeDeleted();
             }
 
             this.relationField(field);
