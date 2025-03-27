@@ -19,6 +19,7 @@ export interface FieldBuilderInfo {
     nonNull: boolean
     nonNullList: boolean
     list: boolean
+    includeDeleted: boolean
     allowedRoles: Set<string>
     deniedRoles: Set<string>
     plugins: Plugin[]
@@ -39,6 +40,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
     protected _nonNull: boolean = false;
     protected _nonNullList: boolean = false;
     protected _list: boolean = false;
+    protected _includeDeleted: boolean = false;
 
     protected _allowedRoles = new Set<string>();
     protected _deniedRoles = new Set<string>();
@@ -149,6 +151,14 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
         return this;
     }
 
+    includeDeleted(): this;
+    includeDeleted(includeDeleted: boolean): this;
+    includeDeleted(includeDeleted: boolean = true): this {
+
+        this._includeDeleted = includeDeleted;
+        return this;
+    }
+
     async finalizeBuilder(context: FinalizeContext){
 
         const info = this.info();
@@ -234,6 +244,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             nonNull: this._nonNull,
             nonNullList: this._nonNullList,
             list: this._list,
+            includeDeleted: this._includeDeleted,
             allowedRoles: new Set(this._allowedRoles),
             deniedRoles: new Set(this._deniedRoles),
             resolver: this._resolver,

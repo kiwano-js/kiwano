@@ -71,6 +71,10 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
 
                 const queryBuilder = repository.createQueryBuilder(modelAlias);
 
+                if(options.fieldInfo.includeDeleted){
+                    queryBuilder.withDeleted();
+                }
+
                 await executeHooks('$modifySelectQuery', hooks => hooks.$modifySelectQuery(queryBuilder, resolverInfo, extra));
                 await executeHooks('$modifyAllQuery', hooks => hooks.$modifyAllQuery(queryBuilder, resolverInfo, extra));
 

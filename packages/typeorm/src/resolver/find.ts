@@ -89,6 +89,10 @@ export function findResolver<ModelType, SourceType=any>(options: FindResolverOpt
 
                 const queryBuilder = getModelSelectQuery(repository, id);
 
+                if(options.fieldInfo.includeDeleted){
+                    queryBuilder.withDeleted();
+                }
+
                 await executeHooks('$modifySelectQuery', hooks => hooks.$modifySelectQuery(queryBuilder, resolverInfo, extra));
                 await executeHooks('$modifyFindQuery', hooks => hooks.$modifyFindQuery(queryBuilder, resolverInfo, extra));
 

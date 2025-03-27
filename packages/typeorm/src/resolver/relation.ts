@@ -87,6 +87,10 @@ export function relationResolver<ModelType, SourceType=any, RelationModelType=ob
                 const relationLoader = new RelationLoader(options.dataSource);
                 const queryBuilder = relationLoader.query(relationMetadata, source, repository.queryRunner);
 
+                if(options.fieldInfo.includeDeleted){
+                    queryBuilder.withDeleted();
+                }
+
                 await executeHooks('$modifyRelationQuery', hooks => hooks.$modifyRelationQuery(relation, queryBuilder, resolverInfo, extra));
 
                 if(isMany){
