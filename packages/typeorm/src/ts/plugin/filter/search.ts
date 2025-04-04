@@ -53,7 +53,6 @@ export interface SearchFilterPluginOptions extends CoreSearchFilterPluginOptions
     configs?: SearchFieldConfig[]
     exclude?: string[]
     include?: string[]
-
 }
 
 export interface SearchFieldConfig {
@@ -67,6 +66,7 @@ export interface SearchFieldOptions {
     fullText?: boolean
     modifier?: SearchFullTextModifier
     sortRelevance?: boolean
+    sortLength?: boolean
 }
 
 export const defaultOptions: SearchFilterPluginOptions = {}
@@ -148,7 +148,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
             relationAliasMap.set(relation, alias);
         }
 
-        const sorts: { clause: string, paramName: string, paramValue: string }[] = [];
+        let sorts: { clause: string, paramName?: string, paramValue?: string, direction: 'ASC' | 'DESC' }[] = [];
 
         builder.andWhere(new Brackets(qb => {
 
@@ -160,14 +160,21 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
                 const fieldSearchQuery = this.modifySearchQuery(searchQuery, field, metadata, info);
                 const paramName = `${paramNameBase}${fieldIndex}`;
 
-                let clause = null;
+                let resolvedFieldNames: string[] = null;
+                let resolvedAlias: string = null;
 
                 if(field.relation){
-                    clause = this.getWhereClause(relationAliasMap.get(field.relation.relation), field.relation.relationFields, paramName, field.options);
+
+                    resolvedAlias = relationAliasMap.get(field.relation.relation);
+                    resolvedFieldNames = field.relation.relationFields;
                 }
                 else if(field.fields) {
-                    clause = this.getWhereClause(metadata.name, field.fields, paramName, field.options);
+
+                    resolvedAlias = metadata.name;
+                    resolvedFieldNames = field.fields;
                 }
+
+                const clause = resolvedFieldNames ? this.getWhereClause(resolvedAlias, resolvedFieldNames, paramName, field.options) : null;
 
                 if(clause){
 
@@ -175,7 +182,13 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
                     if(field.options?.sortRelevance === true && fullTextMode){
 
-                        sorts.push({ clause, paramName, paramValue: fieldSearchQuery });
+                        sorts.push({ clause, paramName, paramValue: fieldSearchQuery, direction: 'DESC' });
+                    }
+
+                    if(field.options?.sortLength === true){
+
+                        const concatFields = this.getFieldsConcat(resolvedAlias, resolvedFieldNames)
+                        sorts.push({ clause: `LENGTH(${concatFields})`, direction: 'ASC' });
                     }
                 }
 
@@ -185,8 +198,11 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
         for(const sort of sorts){
 
-            builder.addOrderBy(sort.clause, 'DESC');
-            builder.setParameter(sort.paramName, sort.paramValue);
+            builder.addOrderBy(sort.clause, sort.direction);
+
+            if(sort.paramName) {
+                builder.setParameter(sort.paramName, sort.paramValue);
+            }
         }
     }
 
@@ -269,26 +285,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
                 searchValue = `CONCAT('%', :${paramName})`;
             }
 
-            let likeFields = null;
-
-            if(fields.length === 1){
-                likeFields = this.getWhereClauseField(alias, fields[0]);
-            }
-            else {
-
-                const leftParts: string[] = [];
-
-                for(const [index, field] of fields.entries()){
-
-                    if(index > 0) {
-                        leftParts.push('" "');
-                    }
-
-                    leftParts.push(this.getWhereClauseField(alias, field));
-                }
-
-                likeFields = `CONCAT(${leftParts.join(', ')})`;
-            }
+            const likeFields = this.getFieldsConcat(alias, fields);
 
             return `${likeFields} LIKE ${searchValue}`;
         }
@@ -297,6 +294,32 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
     getWhereClauseField(alias: string, field: string){
 
         return `${alias}.${field}`;
+    }
+
+    getFieldsConcat(alias: string, fieldNames: string[]): string {
+
+        let concatFields: string = null;
+
+        if(fieldNames.length === 1){
+            concatFields = this.getWhereClauseField(alias, fieldNames[0]);
+        }
+        else {
+
+            const leftParts: string[] = [];
+
+            for(let [index, field] of fieldNames.entries()){
+
+                if(index > 0) {
+                    leftParts.push('" "');
+                }
+
+                leftParts.push(this.getWhereClauseField(alias, field));
+            }
+
+            concatFields = `CONCAT(${leftParts.join(', ')})`;
+        }
+
+        return concatFields;
     }
 
     beforeApplySearch(builder: SelectQueryBuilder<any>, fields: Set<SearchFieldConfig>, searchQuery: string, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}

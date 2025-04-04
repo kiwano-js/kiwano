@@ -109,6 +109,11 @@ export function deleteResolver<ModelType, SourceType=any>(options: DeleteResolve
         else {
 
             const queryBuilder = getModelSelectQuery(repository, id);
+
+            if(options.fieldInfo.includeDeleted){
+                queryBuilder.withDeleted();
+            }
+
             await executeHooks('$modifySelectQuery', hooks => hooks.$modifySelectQuery(queryBuilder, resolverInfo));
 
             model = await queryBuilder.getOne();
