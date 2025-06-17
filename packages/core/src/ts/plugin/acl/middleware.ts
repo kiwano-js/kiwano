@@ -16,26 +16,26 @@ export const defaultAclMiddlewareOptions: AclMiddlewareOptions = {
     onForbidden: resource => { throw new ForbiddenError(`No access to ${resource}`) }
 }
 
-export function expressAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null) {
+export function honoAclMiddleware(acl: AclPlugin, config: AclValidateConfigType = null, options: AclMiddlewareOptions = null) {
 
     const fullOptions = getOptions(options);
 
-    return (req, res, next) => {
+    return async (c, next) => {
 
-        const fullPath = req.baseUrl + req.path;
+        const fullPath = c.req.path;
 
         if(!config){
             config = { resource: fullPath };
         }
 
-        const role = get(req, fullOptions.rolePath) ?? null;
+        const role =  c.get(fullOptions.rolePath) ?? null;
         const allowed = acl.validate(config, role);
 
         if(!allowed){
             fullOptions.onForbidden(fullPath);
         }
 
-        next();
+        return await next();
     }
 }
 
@@ -48,7 +48,7 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
         const pathResource = getPathResource(info.path);
         const parsedConfig = { resource: `${schemaName}:${pathResource}` };
 
-        const role = get(context, fullOptions.rolePath) ?? null;
+        const role = context.get(fullOptions.rolePath) ?? null;
         const allowed = acl.validate(parsedConfig, role);
 
         if(!allowed){

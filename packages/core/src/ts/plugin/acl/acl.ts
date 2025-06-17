@@ -3,7 +3,7 @@ import { isArray, isString, isNumber, sortBy, escapeRegExp, defaults } from 'es-
 import {
     type AclMiddlewareOptions,
     defaultAclMiddlewareOptions,
-    expressAclMiddleware,
+    honoAclMiddleware,
     graphQLAclMiddleware
 } from "./middleware";
 
@@ -198,7 +198,7 @@ export class AclPlugin implements Plugin {
 
     middleware(config: AclValidateConfigType = null) {
 
-        return expressAclMiddleware(this, config, this._options);
+        return honoAclMiddleware(this, config, this._options);
     }
 
     rolePath(path: string): this {
