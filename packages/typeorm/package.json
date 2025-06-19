@@ -34,7 +34,6 @@
     "url": "https://github.com/kiwano-js/kiwano/issues"
   },
   "scripts": {
-    "postinstall": "rslib build",
     "build": "rslib build",
     "dev": "rslib build --watch",
     "test": "vitest run"
