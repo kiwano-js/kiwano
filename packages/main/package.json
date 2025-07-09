@@ -1,6 +1,6 @@
 {
   "name": "kiwano",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.1",
   "description": "Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations.",
   "type": "module",
   "author": {
@@ -38,16 +38,16 @@
   },
   "scripts": {
     "build": "rslib build",
-    "dev": "rslib build --watch",
-    "test": "vitest run"
+    "dev": "rslib build --watch"
   },
   "peerDependencies": {
     "@kiwano/core": "workspace:^"
   },
   "devDependencies": {
     "@rslib/core": "^0.5.4",
-    "@total-typescript/tsconfig": "^1.0.4",
+    "@wittignl/js-config": "^1.1.0",
     "@types/node": "^22.13.10",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "@rsbuild/plugin-source-build": "^1.0.2"
   }
 }

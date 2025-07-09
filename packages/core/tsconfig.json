@@ -1,18 +1,29 @@
 {
-  "extends": "@total-typescript/tsconfig/bundler/dom/library",
+  "extends": "./node_modules/@wittignl/js-config/typescript/library.tsconfig.jsonc",
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "composite": true,
+    /* Bundler - Input: */
     "baseUrl": ".",
+    "rootDir": "./src/ts",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["./src/ts/types"],
+    "types": [
+      "@rslib/core/types",
+      "./src/ts/types"
+    ],
+    /* Bundler - Output: */
     "outDir": "./dist",
-    "sourceMap": true,
-    "sourceRoot": "./src/ts",
+    "declarationDir": "./dist/types",
+    /* Compat */
     "strict": false
   },
-  "include": ["./src/**/*.ts", "./src/**/*.d.ts"],
-  "exclude": ["**/dist", "**/node_modules", "**/.*/"]
+  "include": [
+    "./src/ts/**/*.ts",
+    "./src/ts/**/*.tsx",
+    "./src/ts/**/*.d.ts",
+    "./src/ts/**/*.js",
+    "./src/ts/**/*.jsx",
+    "./src/ts/**/*.json"
+  ]
 }

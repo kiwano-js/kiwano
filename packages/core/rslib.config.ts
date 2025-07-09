@@ -1,9 +1,11 @@
 import { defineConfig } from '@rslib/core';
 
+import { pluginSourceBuild } from '@rsbuild/plugin-source-build';
+
 export default defineConfig({
     source: {
         entry: {
-            index: 'src/ts/index.ts'
+            index: './src/ts/index.ts'
         }
     },
     lib: [
@@ -19,5 +21,8 @@ export default defineConfig({
     ],
     output: {
         target: 'node'
-    }
+    },
+    plugins: [
+        pluginSourceBuild()
+    ]
 });
