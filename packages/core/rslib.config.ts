@@ -1,7 +1,5 @@
 import { defineConfig } from '@rslib/core';
 
-import { pluginSourceBuild } from '@rsbuild/plugin-source-build';
-
 export default defineConfig({
     source: {
         entry: {
@@ -21,8 +19,5 @@ export default defineConfig({
     ],
     output: {
         target: 'node'
-    },
-    plugins: [
-        pluginSourceBuild()
-    ]
+    }
 });
