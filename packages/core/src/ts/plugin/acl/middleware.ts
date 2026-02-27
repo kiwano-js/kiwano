@@ -48,7 +48,7 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
         const pathResource = getPathResource(info.path);
         const parsedConfig = { resource: `${schemaName}:${pathResource}` };
 
-        const role = context.get(fullOptions.rolePath) ?? null;
+        const role = get(context, fullOptions.rolePath) ?? null;
         const allowed = acl.validate(parsedConfig, role);
 
         if(!allowed){
