@@ -8,8 +8,7 @@
       "@/*": ["./src/*"]
     },
     "types": [
-      "@rslib/core/types",
-      "./src/ts/types"
+      "@rslib/core/types"
     ],
     /* Bundler - Output: */
     "outDir": "./dist",
