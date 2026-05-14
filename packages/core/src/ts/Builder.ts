@@ -1,11 +1,10 @@
 import { isFunction } from 'es-toolkit/compat'
 
 import { GraphQLScalarType, type GraphQLType } from "graphql";
-import type { GraphQLFieldResolver } from "graphql/type/definition";
 
 import type { Plugin } from "./plugin";
 import FrameworkError from "./error/FrameworkError";
-import type { Configurator, OptionalPromise } from "./common";
+import type { Configurator, FieldRuntime, OptionalPromise } from "./common";
 import type { AbstractSchemaBuilder } from "./schema";
 
 export class BuilderError extends FrameworkError {}
@@ -121,9 +120,9 @@ export class BuildContext {
         return resolvedType;
     }
 
-    getResolver(typeName, fieldName): GraphQLFieldResolver<any, any> {
+    getFieldRuntime(typeName, fieldName): FieldRuntime {
 
-        return this.schema.findResolver(typeName, fieldName);
+        return this.schema.findFieldRuntime(typeName, fieldName);
     }
 }
 

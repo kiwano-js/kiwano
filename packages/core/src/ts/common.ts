@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLFieldResolver } from "graphql/type/definition";
 
 export type { IMiddleware as Middleware } from "graphql-middleware";
 
@@ -15,4 +16,9 @@ export interface ResolverInfo<ST> {
     args: AnyObject
     context: any,
     info: GraphQLResolveInfo
+}
+
+export interface FieldRuntime {
+    resolve?: GraphQLFieldResolver<any, any>
+    subscribe?: GraphQLFieldResolver<any, any>
 }

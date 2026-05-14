@@ -24,10 +24,10 @@ import { UnionTypeBuilder, type UnionTypeMemberName } from "./unionType";
 
 import { ensureInstantiated, resolveBuilder, resolveBuilderArgs } from "./util";
 import type Builder from "./Builder";
-import { BuildContext, FinalizeContext, resolveName } from "./Builder";
+import { BuildContext, BuilderError, FinalizeContext, resolveName } from "./Builder";
 import type { NamingStrategy } from "./naming";
 import type { Plugin } from "./plugin";
-import type { Configurator, Middleware, OptionalPromise } from "./common";
+import type { Configurator, FieldRuntime, Middleware, OptionalPromise } from "./common";
 
 const DefaultScalars = [GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID];
 
@@ -61,12 +61,17 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     protected _allowedMutationRoles = new Set<string>();
     protected _deniedMutationRoles = new Set<string>();
 
+    protected _allowedSubscriptionRoles = new Set<string>();
+    protected _deniedSubscriptionRoles = new Set<string>();
+
     protected _queryObject = new ObjectTypeBuilder('Query');
     protected _mutationObject?: ObjectTypeBuilder;
+    protected _subscriptionObject?: ObjectTypeBuilder;
 
     protected _resolvers?: object;
     protected _queryResolvers?: object;
     protected _mutationResolvers?: object;
+    protected _subscriptionResolvers?: object;
 
     protected _compiledResolvers: object;
 
@@ -115,7 +120,7 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
     getObjectTypes(): ObjectTypeBuilder[] {
 
-        return compact([this._queryObject, this._mutationObject, ...Array.from(this._objectTypes.values())]);
+        return compact([this._queryObject, this._mutationObject, this._subscriptionObject, ...Array.from(this._objectTypes.values())]);
     }
 
     inputObject(name: string, configurator: Configurator<InputObjectTypeBuilder>): this;
@@ -254,6 +259,20 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         return this;
     }
 
+    subscription(name: string, type: FieldType, configurator: Configurator<FieldBuilder>): this;
+    subscription(name: string, type: FieldType): this;
+    subscription(field: FieldBuilder): this;
+    subscription(fieldOrName: FieldBuilder | string, type: FieldType, configurator: Configurator<FieldBuilder>);
+    subscription(fieldOrName: FieldBuilder | string, type: FieldType = null, configurator: Configurator<FieldBuilder> = null): this {
+
+        if(!this._subscriptionObject){
+            this._subscriptionObject = new ObjectTypeBuilder('Subscription');
+        }
+
+        this._subscriptionObject.field(fieldOrName, type, configurator);
+        return this;
+    }
+
     resolvers(resolvers: object): this {
 
         this._resolvers = resolvers;
@@ -269,6 +288,12 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     mutationResolvers(resolvers: object): this {
 
         this._mutationResolvers = resolvers;
+        return this;
+    }
+
+    subscriptionResolvers(resolvers: object): this {
+
+        this._subscriptionResolvers = resolvers;
         return this;
     }
 
@@ -305,6 +330,18 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     denyMutation(...roles: string[]): this {
 
         roles.forEach(role => this._deniedMutationRoles.add(role));
+        return this;
+    }
+
+    allowSubscription(...roles: string[]): this {
+
+        roles.forEach(role => this._allowedSubscriptionRoles.add(role));
+        return this;
+    }
+
+    denySubscription(...roles: string[]): this {
+
+        roles.forEach(role => this._deniedSubscriptionRoles.add(role));
         return this;
     }
 
@@ -346,6 +383,9 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         else if(name === this._mutationObject?.name){
             type = this._mutationObject;
         }
+        else if(name === this._subscriptionObject?.name){
+            type = this._subscriptionObject;
+        }
         else {
 
             type = this._objectTypes.get(name)
@@ -375,17 +415,26 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         return !!this.findType(name, deep);
     }
 
-    findResolver(typeName: string, fieldName: string): GraphQLFieldResolver<any, any> {
+    findFieldRuntime(typeName: string, fieldName: string): FieldRuntime {
 
-        const resolvers = this.compiledResolvers;
-        let resolver: GraphQLFieldResolver<any, any> = null;
-
+        const resolvers = this.compiledResolvers as any;
         const typeResolvers = resolvers[typeName];
-        if(typeResolvers && typeResolvers[fieldName]){
-            resolver = typeResolvers[fieldName].bind(typeResolvers);
+        if(!typeResolvers){
+            return null;
         }
 
-        return resolver;
+        if(typeName === this._subscriptionObject?.name){
+            return this._resolveSubscriptionFieldRuntime(typeResolvers, fieldName);
+        }
+
+        const fieldResolver = typeResolvers[fieldName];
+        if(!isFunction(fieldResolver)){
+            return null;
+        }
+
+        return {
+            resolve: fieldResolver.bind(typeResolvers)
+        };
     }
 
     get name(): string {
@@ -424,6 +473,9 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
             subSchema.allowMutation(...Array.from(this._allowedMutationRoles));
             subSchema.denyMutation(...Array.from(this._deniedMutationRoles));
+
+            subSchema.allowSubscription(...Array.from(this._allowedSubscriptionRoles));
+            subSchema.denySubscription(...Array.from(this._deniedSubscriptionRoles));
         }
 
         await this._executePlugins('beforeFinalizeSchema', plugin => plugin.beforeFinalizeSchema(this));
@@ -468,6 +520,16 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
             for(const mutationField of this._mutationObject.info().fields){
                 mutationField.allow(...fullAllowedMutationRoles).deny(...fullDeniedMutationRoles);
+            }
+        }
+
+        if(this._subscriptionObject){
+
+            const fullAllowedSubscriptionRoles = [...Array.from(this._allowedRoles), ...Array.from(this._allowedSubscriptionRoles)];
+            const fullDeniedSubscriptionRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedSubscriptionRoles)];
+
+            for(const subscriptionField of this._subscriptionObject.info().fields){
+                subscriptionField.allow(...fullAllowedSubscriptionRoles).deny(...fullDeniedSubscriptionRoles);
             }
         }
 
@@ -532,6 +594,10 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             schemaConfig['mutation'] = this._mutationObject.build(context);
         }
 
+        if(this._subscriptionObject){
+            schemaConfig['subscription'] = this._subscriptionObject.build(context);
+        }
+
         const schema = new GraphQLSchema(schemaConfig);
 
         // Create full schema
@@ -569,6 +635,10 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             resolvers['Mutation'] = ensureInstantiated(this._mutationResolvers);
         }
 
+        if(this._subscriptionResolvers && this._subscriptionObject){
+            resolvers['Subscription'] = ensureInstantiated(this._subscriptionResolvers);
+        }
+
         for(const objectType of this._objectTypes.values()){
 
             const objectResolvers = objectType.getResolvers();
@@ -604,6 +674,44 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     protected _addDefaultScalars(){
 
         DefaultScalars.forEach(scalar => this.scalar(scalar));
+    }
+
+    protected _resolveSubscriptionFieldRuntime(typeResolvers: any, fieldName: string): FieldRuntime {
+
+        const fieldResolver = typeResolvers[fieldName];
+        if(!fieldResolver){
+            return null;
+        }
+
+        if(isFunction(fieldResolver)){
+            return this._normalizeSubscriptionFieldRuntime(fieldResolver.call(typeResolvers), fieldName, typeResolvers);
+        }
+
+        if(isObjectLike(fieldResolver)){
+            return this._normalizeSubscriptionFieldRuntime(fieldResolver as FieldRuntime, fieldName, typeResolvers);
+        }
+
+        throw new BuilderError(`Subscription resolver "${fieldName}" must be an object with a subscribe function or a method returning one`);
+    }
+
+    protected _normalizeSubscriptionFieldRuntime(input: FieldRuntime, fieldName: string, context: any): FieldRuntime {
+
+        if(!isObjectLike(input)){
+            throw new BuilderError(`Subscription resolver "${fieldName}" must return an object with a subscribe function`);
+        }
+
+        if(!isFunction(input.subscribe)){
+            throw new BuilderError(`Subscription resolver "${fieldName}" must define a subscribe function`);
+        }
+
+        if(input.resolve && !isFunction(input.resolve)){
+            throw new BuilderError(`Subscription resolver "${fieldName}" must define resolve as a function`);
+        }
+
+        return {
+            subscribe: input.subscribe.bind(context),
+            resolve: input.resolve?.bind(context)
+        };
     }
 }
 

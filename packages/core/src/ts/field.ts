@@ -215,9 +215,10 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
             type = new GraphQLNonNull(type);
         }
 
-        const resolver = this._resolver || context.getResolver(parentBuilder.name, this.name);
+        const fieldRuntime = context.getFieldRuntime(parentBuilder.name, this.name);
+        const resolver = this._resolver || fieldRuntime?.resolve;
 
-        const field = {
+        const field: GraphQLFieldConfig<any, any> = {
             type,
             description: this._description,
             args: builtArgs,
@@ -225,7 +226,8 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
                 ...getAclExtension(this._allowedRoles, this._deniedRoles),
                 ...Object.fromEntries(this._extensions)
             },
-            resolve: resolver
+            ...(resolver ? { resolve: resolver } : {}),
+            ...(fieldRuntime?.subscribe ? { subscribe: fieldRuntime.subscribe } : {})
         }
 
         this._executePluginsSync('afterBuildField', plugin => plugin.afterBuildField(this, context, info, field));
