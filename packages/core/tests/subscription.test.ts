@@ -1,15 +1,8 @@
 import { expect, test } from 'vitest';
 
-import { BuilderError, BuildContext, schema } from '../src/ts';
+import { BuilderError, schema } from '../src/ts';
 
-function buildSubscriptionField(builder: any, fieldName = 'messageCreated') {
-
-    const subscriptionType = builder.locateType('Subscription')?.type as any;
-    const buildContext = new BuildContext(builder, builder, new Map());
-    const builtSubscriptionType = subscriptionType.build(buildContext);
-
-    return builtSubscriptionType.getFields()[fieldName];
-}
+import { buildRootField, getRootFieldInfo } from './helpers';
 
 test('builds a subscription root object when subscription fields are added', async (): Promise<void> => {
 
@@ -19,10 +12,8 @@ test('builds a subscription root object when subscription fields are added', asy
 
     await builder.finalize();
 
-    const subscriptionField = buildSubscriptionField(builder);
-
     expect(builder.locateType('Subscription')?.type?.name).toBe('Subscription');
-    expect(subscriptionField).toBeDefined();
+    expect(buildRootField(builder, 'Subscription', 'messageCreated')).toBeDefined();
 });
 
 test('supports subscription descriptor objects and binds subscribe/resolve to the resolver container', async (): Promise<void> => {
@@ -44,7 +35,7 @@ test('supports subscription descriptor objects and binds subscribe/resolve to th
 
     await builder.finalize();
 
-    const subscriptionField = buildSubscriptionField(builder);
+    const subscriptionField = buildRootField(builder, 'Subscription', 'messageCreated');
 
     expect(subscriptionField.subscribe?.()).toBe('object');
     expect(subscriptionField.resolve?.('payload')).toBe('object:payload');
@@ -78,15 +69,11 @@ test('supports class-based subscription resolver factories and applies subscript
 
     expect((builder.compiledResolvers as any).Subscription).toBeInstanceOf(SubscriptionResolvers);
 
-    const subscriptionField = buildSubscriptionField(builder);
+    const subscriptionField = buildRootField(builder, 'Subscription', 'messageCreated');
+    const fieldInfo = getRootFieldInfo(builder, 'Subscription', 'messageCreated');
 
     expect(subscriptionField.subscribe?.()).toBe('class');
     expect(subscriptionField.resolve?.('payload')).toBe('class:payload');
-
-    const subscriptionType = builder.locateType('Subscription')?.type as any;
-    const subscriptionBuilderField = subscriptionType.info().fields[0];
-    const fieldInfo = subscriptionBuilderField.info();
-
     expect(fieldInfo.allowedRoles.has('admin')).toBe(true);
     expect(fieldInfo.deniedRoles.has('guest')).toBe(true);
 });
@@ -119,7 +106,7 @@ test('supports existing subscription resolver instances', async (): Promise<void
 
     expect((builder.compiledResolvers as any).Subscription).toBe(resolverInstance);
 
-    const subscriptionField = buildSubscriptionField(builder);
+    const subscriptionField = buildRootField(builder, 'Subscription', 'messageCreated');
 
     expect(subscriptionField.subscribe?.()).toBe('instance');
     expect(subscriptionField.resolve?.('payload')).toBe('instance:payload');
@@ -138,6 +125,6 @@ test('throws for invalid subscription resolver factory responses', async (): Pro
 
     await builder.finalize();
 
-    expect(() => buildSubscriptionField(builder)).toThrowError(BuilderError);
-    expect(() => buildSubscriptionField(builder)).toThrow('must return an object with a subscribe function');
+    expect(() => buildRootField(builder, 'Subscription', 'messageCreated')).toThrowError(BuilderError);
+    expect(() => buildRootField(builder, 'Subscription', 'messageCreated')).toThrow('must return an object with a subscribe function');
 });
