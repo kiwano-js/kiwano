@@ -68,6 +68,8 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
     protected _queryResolvers?: object;
     protected _mutationResolvers?: object;
 
+    protected _compiledResolvers: object;
+
     constructor(name: string=null) {
 
         this._name = name;
@@ -551,7 +553,11 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         return mergedSchema;
     }
 
-    get compiledResolvers() {
+    get compiledResolvers(): object {
+
+        if(this._compiledResolvers){
+            return this._compiledResolvers;
+        }
 
         const resolvers: any = this._resolvers ? clone(this._resolvers) : {};
 
@@ -571,6 +577,7 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             }
         }
 
+        this._compiledResolvers = resolvers;
         return resolvers;
     }
 
