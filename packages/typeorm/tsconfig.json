@@ -3,7 +3,6 @@
   "compilerOptions": {
     "composite": true,
     /* Bundler - Input: */
-    "baseUrl": ".",
     "rootDir": "./src/ts",
     "paths": {
       "@/*": ["./src/*"]
@@ -15,9 +14,15 @@
     /* Bundler - Output: */
     "outDir": "./dist",
     "declarationDir": "./dist/types",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "ignoreDeprecations": "6.0",
     /* Compat */
     "strict": false
   },
+  "files": [],
   "include": [
     "./src/ts/**/*.ts",
     "./src/ts/**/*.tsx",
@@ -25,5 +30,12 @@
     "./src/ts/**/*.js",
     "./src/ts/**/*.jsx",
     "./src/ts/**/*.json"
+  ],
+  "exclude": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "references": [
+    { "path": "../core" }
   ]
 }
