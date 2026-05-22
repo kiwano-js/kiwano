@@ -1,6 +1,6 @@
 {
   "name": "@kiwano/typeorm",
-  "version": "3.0.0-beta.5",
+  "version": "3.0.0-beta.6",
   "description": "Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations.",
   "type": "module",
   "author": {
@@ -46,7 +46,7 @@
     "@kiwano/core": "workspace:^",
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
     "graphql-scalars": "^1.23.0",
-    "typeorm": "^0.3.0",
+    "typeorm": "^1.0.0",
     "es-toolkit": "^1.33.0"
   },
   "devDependencies": {
