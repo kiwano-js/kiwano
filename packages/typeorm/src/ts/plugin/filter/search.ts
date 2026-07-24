@@ -21,6 +21,7 @@ import {
 
 import { addRelationJoin, type Plugin } from "../common";
 import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
+import { getDatabaseType } from "../../util";
 
 export const searchPluginOriginalTypeExtensionName = "$searchPluginOriginalType";
 
@@ -64,6 +65,7 @@ export interface SearchFieldConfig {
 export interface SearchFieldOptions {
     mode?: SearchMode
     fullText?: boolean
+    maxSearchTerms?: number
     modifier?: SearchFullTextModifier
     sortRelevance?: boolean
     sortLength?: boolean
@@ -72,6 +74,8 @@ export interface SearchFieldOptions {
 export const defaultOptions: SearchFilterPluginOptions = {}
 
 export const allowedSearchTypes: FieldType[] = ['String', GraphQLString];
+
+export const defaultMaxSearchTerms = 10;
 
 export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
@@ -132,6 +136,10 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
     applySearch(builder: SelectQueryBuilder<any>, fields: Set<SearchFieldConfig>, searchQuery: string, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
 
         const paramNameBase = 'searchQuery';
+        const searchTerms = this.getSearchTerms(searchQuery);
+        if(!searchTerms.length){
+            return;
+        }
 
         const relations = new Set(
             Array.from(fields)
@@ -149,47 +157,59 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         }
 
         let sorts: { clause: string, paramName?: string, paramValue?: string, direction: 'ASC' | 'DESC' }[] = [];
+        let fieldIndex = 1;
 
         builder.andWhere(new Brackets(qb => {
 
-            let fieldIndex = 1;
-
             for(const field of fields){
 
-                const fullTextMode = this.isOptionsFullText(field.options);
-                const fieldSearchQuery = this.modifySearchQuery(searchQuery, field, metadata, info);
-                const paramName = `${paramNameBase}${fieldIndex}`;
-
-                let resolvedFieldNames: string[] = null;
-                let resolvedAlias: string = null;
-
-                if(field.relation){
-
-                    resolvedAlias = relationAliasMap.get(field.relation.relation);
-                    resolvedFieldNames = field.relation.relationFields;
-                }
-                else if(field.fields) {
-
-                    resolvedAlias = metadata.name;
-                    resolvedFieldNames = field.fields;
+                const resolvedField = this.resolveField(field, metadata, relationAliasMap);
+                if(!resolvedField){
+                    continue;
                 }
 
-                const clause = resolvedFieldNames ? this.getWhereClause(resolvedAlias, resolvedFieldNames, paramName, field.options) : null;
+                const useFullText = this.shouldUseFullText(field.options, info);
 
-                if(clause){
+                if(useFullText){
+
+                    const paramName = `${paramNameBase}FullText${fieldIndex}`;
+                    const fieldSearchQuery = this.modifySearchQuery(searchQuery, field, metadata, info);
+                    const clause = this.getWhereClause(resolvedField.alias, resolvedField.fields, paramName, field.options, info, true);
 
                     qb.orWhere(clause, { [paramName]: fieldSearchQuery });
 
-                    if(field.options?.sortRelevance === true && fullTextMode){
+                    if(field.options?.sortRelevance === true){
 
-                        sorts.push({ clause, paramName, paramValue: fieldSearchQuery, direction: 'DESC' });
+                        const sortClause = this.getFullTextRelevanceClause(resolvedField.alias, resolvedField.fields, paramName, field.options, info);
+                        if(sortClause){
+                            sorts.push({ clause: sortClause, paramName, paramValue: fieldSearchQuery, direction: 'DESC' });
+                        }
                     }
+                }
+                else {
 
-                    if(field.options?.sortLength === true){
+                    const fieldSearchTerms = this.getSearchTerms(searchQuery, field.options);
 
-                        const concatFields = this.getFieldsConcat(resolvedAlias, resolvedFieldNames)
-                        sorts.push({ clause: `LENGTH(${concatFields})`, direction: 'ASC' });
-                    }
+                    qb.orWhere(new Brackets(termQb => {
+
+                        let termIndex = 1;
+
+                        for(const term of fieldSearchTerms){
+
+                            const paramName = `${paramNameBase}${fieldIndex}_${termIndex}`;
+                            const clause = this.getWhereClause(resolvedField.alias, resolvedField.fields, paramName, field.options, info);
+                            const fieldSearchQuery = this.getLikeSearchQuery(term, field.options);
+
+                            termQb.andWhere(clause, { [paramName]: fieldSearchQuery });
+                            termIndex++;
+                        }
+                    }));
+                }
+
+                if(field.options?.sortLength === true){
+
+                    const concatFields = this.getFieldsConcat(resolvedField.alias, resolvedField.fields, info)
+                    sorts.push({ clause: `LENGTH(${concatFields})`, direction: 'ASC' });
                 }
 
                 fieldIndex++;
@@ -206,23 +226,70 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         }
     }
 
+    resolveField(field: SearchFieldConfig, metadata: EntityMetadata, relationAliasMap: Map<string, string>): { alias: string, fields: string[] } {
+
+        if(field.relation){
+
+            return {
+                alias: relationAliasMap.get(field.relation.relation),
+                fields: field.relation.relationFields
+            };
+        }
+        else if(field.fields) {
+
+            return {
+                alias: metadata.name,
+                fields: field.fields
+            };
+        }
+    }
+
+    getSearchTerms(searchQuery: string, options?: SearchFieldOptions): string[] {
+
+        if(!searchQuery){
+            return [];
+        }
+
+        const terms = searchQuery
+            .split(/[^\p{L}\p{N}]+/u)
+            .map(term => term.trim())
+            .filter(term => !!term)
+            .slice(0, this.getMaxSearchTerms(options));
+
+        return Array.from(new Set(terms));
+    }
+
+    getMaxSearchTerms(options?: SearchFieldOptions): number {
+
+        const configuredMaxSearchTerms = Math.floor(options?.maxSearchTerms);
+        if(Number.isFinite(configuredMaxSearchTerms) && configuredMaxSearchTerms > 0){
+            return configuredMaxSearchTerms;
+        }
+
+        return defaultMaxSearchTerms;
+    }
+
     modifySearchQuery(searchQuery: string, field: SearchFieldConfig, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
 
         const isFullText = this.isOptionsFullText(field.options);
         const mode = field.options?.mode;
 
-        if(isFullText && field.options?.modifier === SearchFullTextModifier.BOOLEAN){
+        if(isFullText && field.options?.modifier === SearchFullTextModifier.BOOLEAN && ['mysql', 'mariadb'].includes(this.getDatabaseType(info))){
 
-            const safeQuery = searchQuery.replace(/[^a-zA-Z0-9 ]/g, '');
+            const terms = this.getSearchTerms(searchQuery, field.options);
 
             if(mode === SearchMode.STARTS){
 
-                return `${safeQuery}*`
+                return terms.map(word => `+${word}*`).join(' ');
             }
             else {
 
-                return safeQuery.split(' ').map(word => `+'${word}'`).join(' ');
+                return terms.map(word => `+${word}`).join(' ');
             }
+        }
+
+        if(isFullText){
+            return this.getSearchTerms(searchQuery, field.options).join(' ');
         }
 
         return searchQuery;
@@ -231,6 +298,21 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
     isOptionsFullText(options: SearchFieldOptions){
 
         return options?.mode === SearchMode.FULL_TEXT || options?.fullText == true;
+    }
+
+    shouldUseFullText(options: SearchFieldOptions, info: AllResolverInfo<any> | RelationResolverInfo<any>): boolean {
+
+        return this.isOptionsFullText(options) && this.supportsFullText(info);
+    }
+
+    supportsFullText(info: AllResolverInfo<any> | RelationResolverInfo<any>): boolean {
+
+        return ['mysql', 'mariadb', 'postgres'].includes(this.getDatabaseType(info));
+    }
+
+    getDatabaseType(info: AllResolverInfo<any> | RelationResolverInfo<any>): string {
+
+        return getDatabaseType(info.options.dataSource);
     }
 
     addRelationJoin(builder: SelectQueryBuilder<any>, relation: string, metadata: EntityMetadata){
@@ -250,45 +332,82 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         return joinAliasName;
     }
 
-    getWhereClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions){
+    getWhereClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions, info?: AllResolverInfo<any> | RelationResolverInfo<any>, forceFullText = false){
 
-        const searchMode = options?.mode || SearchMode.CONTAINS;
-        const fullTextMode = this.isOptionsFullText(options);
+        const fullTextMode = forceFullText || (info ? this.shouldUseFullText(options, info) : this.isOptionsFullText(options));
 
         if(fullTextMode){
 
-            const modifier = options?.modifier;
-
-            let againstValue = `:${paramName}`;
-
-            if(modifier === SearchFullTextModifier.BOOLEAN){
-
-                againstValue = `:${paramName} IN BOOLEAN MODE`;
-            }
-            else if(modifier === SearchFullTextModifier.NATURAL_LANGUAGE){
-
-                againstValue = `:${paramName} IN NATURAL LANGUAGE MODE`;
-            }
-
-            const fieldMatches = fields.map(field => this.getWhereClauseField(alias, field));
-
-            return `MATCH (${fieldMatches.join(', ')}) AGAINST (${againstValue})`
+            return this.getFullTextWhereClause(alias, fields, paramName, options, info);
         }
         else {
 
-            let searchValue = `CONCAT('%', :${paramName}, '%')`;
-
-            if(searchMode === SearchMode.STARTS) {
-                searchValue = `CONCAT(:${paramName}, '%')`;
-            }
-            else if(searchMode === SearchMode.ENDS) {
-                searchValue = `CONCAT('%', :${paramName})`;
-            }
-
-            const likeFields = this.getFieldsConcat(alias, fields);
-
-            return `${likeFields} LIKE ${searchValue}`;
+            const fieldClauses = fields.map(field => `LOWER(${this.getWhereClauseField(alias, field)}) LIKE LOWER(:${paramName}) ESCAPE '\\\\'`);
+            return `(${fieldClauses.join(' OR ')})`;
         }
+    }
+
+    getFullTextWhereClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions, info?: AllResolverInfo<any> | RelationResolverInfo<any>){
+
+        const databaseType = info ? this.getDatabaseType(info) : 'mysql';
+        const fieldMatches = fields.map(field => this.getWhereClauseField(alias, field));
+
+        if(databaseType === 'postgres'){
+
+            const document = this.getPostgresTextSearchDocument(alias, fields);
+            return `to_tsvector('simple', ${document}) @@ plainto_tsquery('simple', :${paramName})`;
+        }
+
+        const againstValue = this.getMysqlAgainstValue(paramName, options);
+        return `MATCH (${fieldMatches.join(', ')}) AGAINST (${againstValue})`
+    }
+
+    getFullTextRelevanceClause(alias: string, fields: string[], paramName: string, options?: SearchFieldOptions, info?: AllResolverInfo<any> | RelationResolverInfo<any>): string {
+
+        const databaseType = info ? this.getDatabaseType(info) : 'mysql';
+
+        if(databaseType === 'postgres'){
+
+            const document = this.getPostgresTextSearchDocument(alias, fields);
+            return `ts_rank_cd(to_tsvector('simple', ${document}), plainto_tsquery('simple', :${paramName}))`;
+        }
+
+        const fieldMatches = fields.map(field => this.getWhereClauseField(alias, field));
+        return `MATCH (${fieldMatches.join(', ')}) AGAINST (${this.getMysqlAgainstValue(paramName, options)})`;
+    }
+
+    getMysqlAgainstValue(paramName: string, options?: SearchFieldOptions): string {
+
+        const modifier = options?.modifier;
+
+        if(modifier === SearchFullTextModifier.BOOLEAN){
+            return `:${paramName} IN BOOLEAN MODE`;
+        }
+        else if(modifier === SearchFullTextModifier.NATURAL_LANGUAGE){
+            return `:${paramName} IN NATURAL LANGUAGE MODE`;
+        }
+
+        return `:${paramName}`;
+    }
+
+    getLikeSearchQuery(searchQuery: string, options?: SearchFieldOptions): string {
+
+        const escapedSearchQuery = this.escapeLikeSearchQuery(searchQuery);
+        const searchMode = options?.mode || SearchMode.CONTAINS;
+
+        if(searchMode === SearchMode.STARTS){
+            return `${escapedSearchQuery}%`;
+        }
+        else if(searchMode === SearchMode.ENDS){
+            return `%${escapedSearchQuery}`;
+        }
+
+        return `%${escapedSearchQuery}%`;
+    }
+
+    escapeLikeSearchQuery(searchQuery: string): string {
+
+        return searchQuery.replace(/[\\%_]/g, value => `\\${value}`);
     }
 
     getWhereClauseField(alias: string, field: string){
@@ -296,7 +415,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         return `${alias}.${field}`;
     }
 
-    getFieldsConcat(alias: string, fieldNames: string[]): string {
+    getFieldsConcat(alias: string, fieldNames: string[], info?: AllResolverInfo<any> | RelationResolverInfo<any>): string {
 
         let concatFields: string = null;
 
@@ -310,16 +429,28 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
             for(let [index, field] of fieldNames.entries()){
 
                 if(index > 0) {
-                    leftParts.push('" "');
+                    leftParts.push("' '");
                 }
 
-                leftParts.push(this.getWhereClauseField(alias, field));
+                leftParts.push(`COALESCE(${this.getWhereClauseField(alias, field)}, '')`);
             }
 
-            concatFields = `CONCAT(${leftParts.join(', ')})`;
+            if(info && this.getDatabaseType(info) === 'sqlite'){
+                concatFields = leftParts.join(' || ');
+            }
+            else {
+                concatFields = `CONCAT(${leftParts.join(', ')})`;
+            }
         }
 
         return concatFields;
+    }
+
+    getPostgresTextSearchDocument(alias: string, fieldNames: string[]): string {
+
+        return fieldNames
+            .map(field => `COALESCE(${this.getWhereClauseField(alias, field)}, '')`)
+            .join(" || ' ' || ");
     }
 
     beforeApplySearch(builder: SelectQueryBuilder<any>, fields: Set<SearchFieldConfig>, searchQuery: string, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){}
@@ -463,7 +594,7 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
     }
 }
 
-export function searchFilterPlugin(options?: SearchFilterPluginHooksOptions): SearchFilterPlugin {
+export function searchFilterPlugin(options?: SearchFilterPluginOptions): SearchFilterPlugin {
 
     return new SearchFilterPlugin(options);
 }
