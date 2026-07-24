@@ -34,6 +34,8 @@ export interface AllResolverBaseHooks<ModelType, SourceType> extends ModelQueryR
     $beforeAllResolver?(info: AllResolverInfo<SourceType>): OptionalPromise
     $afterAllResolver?(info: AllResolverInfo<SourceType>): OptionalPromise
 
+    $shouldFetchAll?(info: AllResolverInfo<SourceType>): OptionalPromise<boolean>
+
     $beforeFetchAll?(info: AllResolverInfo<SourceType>): OptionalPromise;
     $afterFetchAll?(result: ModelType[], info: AllResolverInfo<SourceType>): OptionalPromise;
 
@@ -105,13 +107,24 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
         await executeHooks('$beforeAllResolver', hooks => hooks.$beforeAllResolver(resolverInfo));
 
         // Fetch data
-        await executeHooks('$beforeFetch', hooks => hooks.$beforeFetch(resolverInfo));
-        await executeHooks('$beforeFetchAll', hooks => hooks.$beforeFetchAll(resolverInfo));
+        let didFetch = true;
+        let result: any = [];
 
-        let result = await helpers.fetchData();
+        const shouldFetchResults = await executeHooks('$shouldFetchAll', hooks => hooks.$shouldFetchAll(resolverInfo));
+        if(shouldFetchResults.indexOf(false) >= 0){
+            didFetch = false;
+        }
 
-        await executeHooks('$afterFetchAll', hooks => hooks.$afterFetchAll(result, resolverInfo));
-        await executeHooks('$afterFetch', hooks => hooks.$afterFetch(result, resolverInfo));
+        if(didFetch){
+
+            await executeHooks('$beforeFetch', hooks => hooks.$beforeFetch(resolverInfo));
+            await executeHooks('$beforeFetchAll', hooks => hooks.$beforeFetchAll(resolverInfo));
+
+            result = await helpers.fetchData();
+
+            await executeHooks('$afterFetchAll', hooks => hooks.$afterFetchAll(result, resolverInfo));
+            await executeHooks('$afterFetch', hooks => hooks.$afterFetch(result, resolverInfo));
+        }
 
         // Check access
         let allowed = true;
@@ -121,9 +134,12 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
             allowed = false;
         }
 
-        const allAllowedResults = await executeHooks('$allAllowed', hooks => hooks.$allAllowed(result, resolverInfo));
-        if(allAllowedResults.indexOf(false) >= 0){
-            allowed = false;
+        if(didFetch){
+
+            const allAllowedResults = await executeHooks('$allAllowed', hooks => hooks.$allAllowed(result, resolverInfo));
+            if(allAllowedResults.indexOf(false) >= 0){
+                allowed = false;
+            }
         }
 
         if(!allowed){

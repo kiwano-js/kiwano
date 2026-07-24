@@ -17,7 +17,11 @@ export interface IOffsetLimitPaginationPluginHooks extends AllResolverBaseHooks<
 
 export class OffsetLimitPaginationPluginHooks implements IOffsetLimitPaginationPluginHooks {
 
-    $modifyAllQuery(builder: SelectQueryBuilder<any>, info: AllResolverInfo<any>): OptionalPromise {
+    $modifyAllQuery(builder: SelectQueryBuilder<any>, info: AllResolverInfo<any>, extra?: any): OptionalPromise {
+
+        if(extra?.count){
+            return;
+        }
 
         const offset = info.args.offset;
         const limit = info.args.limit;
@@ -25,7 +29,11 @@ export class OffsetLimitPaginationPluginHooks implements IOffsetLimitPaginationP
         this.applyOffsetLimit(builder, offset, limit, info);
     }
 
-    $modifyRelationManyQuery(relation: string, builder: SelectQueryBuilder<object>, info: RelationResolverInfo<any>): OptionalPromise {
+    $modifyRelationManyQuery(relation: string, builder: SelectQueryBuilder<object>, info: RelationResolverInfo<any>, extra?: any): OptionalPromise {
+
+        if(extra?.count){
+            return;
+        }
 
         const offset = info.args.offset;
         const limit = info.args.limit;

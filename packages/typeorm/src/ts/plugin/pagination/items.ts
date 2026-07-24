@@ -10,10 +10,21 @@ import {
 
 import type { Plugin } from "../common";
 import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
+import { getSelectedFieldNames } from "../../resolver/selection";
 
 export interface IItemsPaginationPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
 
 export class ItemsPaginationPluginHooks implements IItemsPaginationPluginHooks {
+
+    $shouldFetchAll(info: AllResolverInfo<any>): OptionalPromise<boolean> {
+
+        const selectedFields = getSelectedFieldNames(info.info);
+        if(selectedFields.has('items')){
+            return true;
+        }
+
+        return Array.from(selectedFields).some(fieldName => !['totalCount', '__typename'].includes(fieldName));
+    }
 
     $transformAllResult(result: any, originalResult: any[], info: AllResolverInfo<any>): OptionalPromise<Optional<any>> {
 
