@@ -342,7 +342,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         }
         else {
 
-            const fieldClauses = fields.map(field => `LOWER(${this.getWhereClauseField(alias, field)}) LIKE LOWER(:${paramName}) ESCAPE '\\\\'`);
+            const fieldClauses = fields.map(field => `LOWER(${this.getWhereClauseField(alias, field)}) LIKE LOWER(:${paramName}) ESCAPE '\\'`);
             return `(${fieldClauses.join(' OR ')})`;
         }
     }

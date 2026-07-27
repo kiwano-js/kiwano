@@ -79,7 +79,7 @@ test('builds portable search as all natural-language terms across any configured
     expect(fieldGroup).toHaveLength(2);
     expect(fieldGroup[0]).toEqual({
         method: 'andWhere',
-        clause: "(LOWER(Product.title) LIKE LOWER(:searchQuery1_1) ESCAPE '\\\\' OR LOWER(Product.description) LIKE LOWER(:searchQuery1_1) ESCAPE '\\\\')",
+        clause: "(LOWER(Product.title) LIKE LOWER(:searchQuery1_1) ESCAPE '\\' OR LOWER(Product.description) LIKE LOWER(:searchQuery1_1) ESCAPE '\\')",
         params: { searchQuery1_1: '%winter%' }
     });
     expect(fieldGroup[1].params).toEqual({ searchQuery1_2: '%boots%' });
@@ -189,7 +189,7 @@ test('falls back to portable token search when fullText is enabled for an unsupp
 
     const fieldGroup = queryBuilder.calls[0].bracketed[0].bracketed;
 
-    expect(fieldGroup[0].clause).toBe("(LOWER(Product.title) LIKE LOWER(:searchQuery1_1) ESCAPE '\\\\')");
+    expect(fieldGroup[0].clause).toBe("(LOWER(Product.title) LIKE LOWER(:searchQuery1_1) ESCAPE '\\')");
     expect(fieldGroup[0].params).toEqual({ searchQuery1_1: '%winter%' });
     expect(fieldGroup[1].params).toEqual({ searchQuery1_2: '%boots%' });
 });
