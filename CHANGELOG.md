@@ -1,5 +1,38 @@
 # Changelog
 
+## [3.0.0-beta.8](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.7...v3.0.0-beta.8) - 2026-07-27
+
+### Added
+
+- Added `$shouldFetchAll()` support to TypeORM all-resolver hooks, allowing
+  plugins to skip loading records when the GraphQL selection does not need
+  item rows. ([7d8fc45](https://github.com/kiwano-js/kiwano/commit/7d8fc458826b06c65209f10296c8be7d2fa9df72))
+
+- Added `SearchFieldOptions.maxSearchTerms` and tokenized TypeORM search terms,
+  with a default limit of 10 terms. ([90329c9](https://github.com/kiwano-js/kiwano/commit/90329c95c78cc2eb975d0f6794734bebf6e1cad9))
+
+```ts
+searchFilterPlugin()
+  .field("title", { maxSearchTerms: 5 });
+```
+
+- Added PostgreSQL full-text search support to the TypeORM search plugin,
+  including PostgreSQL relevance sorting via `ts_rank_cd`. ([90329c9](https://github.com/kiwano-js/kiwano/commit/90329c95c78cc2eb975d0f6794734bebf6e1cad9))
+
+### Fixed
+
+- Fixed portable search escaping for PostgreSQL-compatible `LIKE ... ESCAPE`
+  clauses. ([ea43608](https://github.com/kiwano-js/kiwano/commit/ea43608ef67b5fb54913c452fe3556ec172b0d2f))
+
+### Changed
+
+- Optimized `itemsPaginationPlugin()` so a query that only asks for `totalCount`
+  no longer loads all item records first. ([7d8fc45](https://github.com/kiwano-js/kiwano/commit/7d8fc458826b06c65209f10296c8be7d2fa9df72))
+- Updated TypeORM query-modifier hooks used by pagination so
+  `$modifyAllQuery()` and `$modifyRelationManyQuery()` receive an optional
+  `extra` argument and can skip offset/limit handling for count queries.
+  ([7d8fc45](https://github.com/kiwano-js/kiwano/commit/7d8fc458826b06c65209f10296c8be7d2fa9df72))
+
 ## [3.0.0-beta.7](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.6...v3.0.0-beta.7) - 2026-07-09
 
 ### Changed
