@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.0-beta.9](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.8...v3.0.0-beta.9) - 2026-08-11
+
+### Fixed
+
+- Fixed TypeORM portable search `LIKE ... ESCAPE` clauses for MySQL and
+  MariaDB by using a portable `!` escape character instead of a backslash,
+  avoiding invalid SQL when fallback `LIKE` search is combined with tokenized
+  search terms. ([77081df](https://github.com/kiwano-js/kiwano/commit/77081df8e3505783412c4dc39eadb0086f15f88c))
+
 ## [3.0.0-beta.8](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.7...v3.0.0-beta.8) - 2026-07-27
 
 ### Added
