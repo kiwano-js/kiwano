@@ -76,6 +76,7 @@ export const defaultOptions: SearchFilterPluginOptions = {}
 export const allowedSearchTypes: FieldType[] = ['String', GraphQLString];
 
 export const defaultMaxSearchTerms = 10;
+export const likeEscapeCharacter = '!';
 
 export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
@@ -342,7 +343,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         }
         else {
 
-            const fieldClauses = fields.map(field => `LOWER(${this.getWhereClauseField(alias, field)}) LIKE LOWER(:${paramName}) ESCAPE '\\'`);
+            const fieldClauses = fields.map(field => `LOWER(${this.getWhereClauseField(alias, field)}) LIKE LOWER(:${paramName}) ESCAPE '${likeEscapeCharacter}'`);
             return `(${fieldClauses.join(' OR ')})`;
         }
     }
@@ -407,7 +408,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
     escapeLikeSearchQuery(searchQuery: string): string {
 
-        return searchQuery.replace(/[\\%_]/g, value => `\\${value}`);
+        return searchQuery.replace(/[!%_]/g, value => `${likeEscapeCharacter}${value}`);
     }
 
     getWhereClauseField(alias: string, field: string){
