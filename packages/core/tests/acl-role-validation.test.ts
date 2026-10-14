@@ -3,7 +3,7 @@ import { expect, test } from 'vitest';
 
 import { aclPlugin, AclAction, schema } from '../src/ts';
 
-test.each([null, undefined, 'unknown'])('ALLOW does not authorize missing or unregistered role %s', role => {
+test.each([null, undefined, 'unknown'])('ALLOW does not authorize missing or unregistered role %s', (role): void => {
 
     const acl = aclPlugin({ defaultAction: AclAction.ALLOW }).role('admin');
     expect(acl.validate('admin', role)).toBe(false);
@@ -11,7 +11,7 @@ test.each([null, undefined, 'unknown'])('ALLOW does not authorize missing or unr
     expect(acl.isAllowed(role, 'secret')).toBe(false);
 });
 
-test('role zero is checked for both grants and denies', () => {
+test('role zero is checked for both grants and denies', (): void => {
 
     const acl = aclPlugin({ defaultAction: AclAction.ALLOW }).role(0).deny('secret', 0);
     expect(acl.validate({ resource: 'secret' }, 0)).toBe(false);
@@ -19,7 +19,7 @@ test('role zero is checked for both grants and denies', () => {
     expect(acl.validate(['admin'], 0)).toBe(false);
 });
 
-test('inherits deny rules from numeric role zero and empty-string parents', () => {
+test('inherits deny rules from numeric role zero and empty-string parents', (): void => {
 
     const acl = aclPlugin({ defaultAction: AclAction.ALLOW })
         .role(0).role(1, 0).deny('numeric', 0)
@@ -29,7 +29,7 @@ test('inherits deny rules from numeric role zero and empty-string parents', () =
     expect(acl.validate({ resource: 'text' }, 'child')).toBe(false);
 });
 
-test('anonymous GraphQL contexts cannot bypass a deny with ALLOW configured', async () => {
+test('anonymous GraphQL contexts cannot bypass a deny with ALLOW configured', async (): Promise<void> => {
 
     const built = await schema('role-validation').use(aclPlugin({ defaultAction: AclAction.ALLOW }))
         .query('secret', 'String', field => field.deny('member').resolver(() => 'secret'))
@@ -40,7 +40,7 @@ test('anonymous GraphQL contexts cannot bypass a deny with ALLOW configured', as
     expect(result.errors?.[0].message).toBe('No access to Query.secret');
 });
 
-test('registered roles retain ALLOW fallback and explicit allow-list checks', () => {
+test('registered roles retain ALLOW fallback and explicit allow-list checks', (): void => {
 
     const acl = aclPlugin({ defaultAction: AclAction.ALLOW }).role('member').role('admin');
     expect(acl.validate({ resource: 'unlisted' }, 'member')).toBe(true);
