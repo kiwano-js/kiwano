@@ -1,6 +1,7 @@
 {
   "name": "@kiwano/monorepo",
   "version": "3.0.0-beta.11",
+  "private": true,
   "description": "Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations.",
   "type": "module",
   "packageManager": "pnpm@10.6.2",
@@ -25,7 +26,6 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
-    "publish": "turbo run publish",
     "test": "turbo run test",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",

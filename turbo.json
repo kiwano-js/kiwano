@@ -11,8 +11,13 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "publish": {
-      "dependsOn": ["build"]
+    "@kiwano/typeorm#build": {
+      "dependsOn": ["^build", "@kiwano/core#build"],
+      "outputs": ["dist/**"]
+    },
+    "kiwano#build": {
+      "dependsOn": ["^build", "@kiwano/core#build"],
+      "outputs": ["dist/**"]
     }
   }
 }
