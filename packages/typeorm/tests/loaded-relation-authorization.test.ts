@@ -23,10 +23,10 @@ async function fixture(allowed: boolean, secrets: unknown) : Promise<{ built: im
     }
 
     const dataSource = {
-        getRepository: () => ({
+        getRepository: (): { metadata: { name: string; findRelationWithPropertyPath: () => { isOneToMany: boolean } } } => ({
             metadata: {
                 name: 'Account',
-                findRelationWithPropertyPath: () => ({ isOneToMany: true })
+                findRelationWithPropertyPath: (): { isOneToMany: boolean } => ({ isOneToMany: true })
             }
         })
     };
