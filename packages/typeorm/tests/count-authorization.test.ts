@@ -17,7 +17,7 @@ function fixture(hooks: any = {}) : { resolver: ReturnType<typeof allResolver>; 
     const dataSource: any = {
         getRepository: () => ({
             metadata: { name: 'Record' },
-            createQueryBuilder: () => ({ getMany: fetch, getCount: count })
+            createQueryBuilder: (): { getMany: typeof fetch; getCount: typeof count } => ({ getMany: fetch, getCount: count })
         })
     };
     const resolver = allResolver({
@@ -56,8 +56,8 @@ test('preserves the optimized count query when no row-based guard is configured'
 test('count permissions can be granted separately without fetching rows', async (): Promise<void> => {
 
     const { resolver, fetch, count } = fixture({
-        $allAllowed: rows => rows.every(row => row.tenant === 'own'),
-        $countAllowed: info => info.context.role === 'admin'
+        $allAllowed: (rows): boolean => rows.every(row => row.tenant === 'own'),
+        $countAllowed: (info): boolean => info.context.role === 'admin'
     });
     const denied = await resolver(null, {}, { role: 'member' }, selection('totalCount')) as any;
     await expect(denied.totalCount()).rejects.toThrow('No access to total count');
@@ -70,9 +70,9 @@ test('count permissions can be granted separately without fetching rows', async 
 
 test('count hooks must explicitly return true and a denying plugin wins', async (): Promise<void> => {
 
-    await expect(validateCountAccess([{ $countAllowed: async () => undefined }], '$allAllowed', {} as any))
+    await expect(validateCountAccess([{ $countAllowed: async (): Promise<undefined> => undefined }], '$allAllowed', {} as any))
         .rejects.toThrow('No access to total count');
-    await expect(validateCountAccess([{ $countAllowed: () => true }, { $countAllowed: () => false }], '$allAllowed', {} as any))
+    await expect(validateCountAccess([{ $countAllowed: (): boolean => true }, { $countAllowed: (): boolean => false }], '$allAllowed', {} as any))
         .rejects.toThrow('No access to total count');
 });
 
@@ -82,7 +82,7 @@ test('relation counts cannot bypass a row-dependent relation policy', async (): 
         getRepository: () => ({
             metadata: {
                 name: 'Account',
-                findRelationWithPropertyPath: () => ({ isOneToMany: true })
+                findRelationWithPropertyPath: (): { isOneToMany: boolean } => ({ isOneToMany: true })
             }
         })
     };
@@ -90,8 +90,8 @@ test('relation counts cannot bypass a row-dependent relation policy', async (): 
         dataSource, model: 'Account', relation: 'records',
         fieldInfo: { includeDeleted: false } as any, plugins: [itemsPaginationPlugin()]
     }, {
-        $fetchRelation: () => [{ id: 'own' }],
-        $relationAllowed: () => true
+        $fetchRelation: (): { id: string }[] => [{ id: 'own' }],
+        $relationAllowed: (): boolean => true
     });
     const result = await resolver({}, {}, {}, selection('totalCount')) as any;
 
