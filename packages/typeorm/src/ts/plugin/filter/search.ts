@@ -156,7 +156,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
             throw new ForbiddenError('No accessible search fields');
         }
 
-        fields = readableFields;
+        const accessibleFields = readableFields;
 
         const paramNameBase = 'searchQuery';
         const searchTerms = this.getSearchTerms(searchQuery);
@@ -165,7 +165,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
         }
 
         const relations = new Set(
-            Array.from(fields)
+            Array.from(accessibleFields)
                  .filter(field => !!field.relation)
                  .map(field => field.relation.relation)
         );
@@ -184,7 +184,7 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
 
         builder.andWhere(new Brackets(qb => {
 
-            for(const field of fields){
+            for(const field of accessibleFields){
 
                 const resolvedField = this.resolveField(field, metadata, relationAliasMap);
                 if(!resolvedField){

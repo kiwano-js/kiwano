@@ -34,7 +34,7 @@ async function fixture(kind: 'filter' | 'sort' | 'search', explicitSearch = fals
     const metadata = { name: 'Account' };
     const dataSource: any = {
         options: { type: 'sqlite' },
-        getRepository: () => ({ metadata, createQueryBuilder: () => queryBuilder }),
+        getRepository: () => ({ metadata, createQueryBuilder: (): any => queryBuilder }),
         getMetadata: () => metadata
     };
     const plugin = kind === 'filter' ? equalsFilterPlugin()
