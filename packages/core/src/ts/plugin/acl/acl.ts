@@ -241,7 +241,7 @@ export class AclPlugin implements Plugin {
 
         schema.extensions = {
             ...schema.extensions,
-            [aclFieldValidatorExtensionName]: ((context, typeName, fieldName) => {
+            [aclFieldValidatorExtensionName]: ((context, typeName, fieldName): boolean => {
                 return this.validate({ resource: `${schemaId}:${typeName}.${fieldName}` }, get(context, this._options.rolePath) ?? null);
             }) satisfies AclFieldValidator
         };

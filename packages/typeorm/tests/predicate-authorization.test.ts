@@ -4,13 +4,13 @@ import { aclPlugin, schema } from '@kiwano/core';
 
 import { allResolver, equalsFilterPlugin, searchFilterPlugin, sortPlugin } from '../src/ts';
 
-async function fixture(kind: 'filter' | 'sort' | 'search', explicitSearch = false) {
+async function fixture(kind: 'filter' | 'sort' | 'search', explicitSearch = false) : Promise<{ built: import('graphql').GraphQLSchema; fetch: ReturnType<typeof vi.fn>; clauses: string[] }> {
 
     const clauses: string[] = [];
     const fetch = vi.fn(async () => [{ id: '1', name: 'public', secret: 'private' }]);
     const queryBuilder: any = {
         getMany: fetch,
-        andWhere(clause: any) {
+        andWhere(clause: any) : any {
 
             if(clause.whereFactory){
                 clause.whereFactory(queryBuilder);
@@ -21,11 +21,11 @@ async function fixture(kind: 'filter' | 'sort' | 'search', explicitSearch = fals
 
             return queryBuilder;
         },
-        orWhere(clause: any) {
+        orWhere(clause: any) : any {
 
             return queryBuilder.andWhere(clause);
         },
-        addOrderBy(clause: string) {
+        addOrderBy(clause: string) : any {
 
             clauses.push(clause);
             return queryBuilder;
@@ -54,7 +54,7 @@ async function fixture(kind: 'filter' | 'sort' | 'search', explicitSearch = fals
     return { built, fetch, clauses };
 }
 
-test.each(['filter', 'sort'] as const)('blocks hidden %s predicates before database execution and permits admin', async kind => {
+test.each(['filter', 'sort'] as const)('blocks hidden %s predicates before database execution and permits admin', async (kind): Promise<void> => {
 
     const { built, fetch } = await fixture(kind);
     const argument = kind === 'filter' ? 'filter: { secret: "guess" }' : 'sort: { field: secret, direction: ASC }';
@@ -69,7 +69,7 @@ test.each(['filter', 'sort'] as const)('blocks hidden %s predicates before datab
     expect(fetch).toHaveBeenCalledOnce();
 });
 
-test('automatic search uses only readable fields without revealing protected values', async () => {
+test('automatic search uses only readable fields without revealing protected values', async (): Promise<void> => {
 
     const { built, clauses } = await fixture('search');
     const result = await graphql({
@@ -81,7 +81,7 @@ test('automatic search uses only readable fields without revealing protected val
     expect(clauses.join(' ')).not.toContain('Account.secret');
 });
 
-test('explicit search on a hidden field is rejected rather than silently opening the query', async () => {
+test('explicit search on a hidden field is rejected rather than silently opening the query', async (): Promise<void> => {
 
     const { built, fetch } = await fixture('search', true);
     const result = await graphql({
