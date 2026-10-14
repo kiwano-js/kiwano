@@ -10,7 +10,7 @@ import {
 import FrameworkError from "../../error/FrameworkError";
 import type { Plugin } from "../common";
 import type { SchemaBuilder } from "../../schema";
-import type { GraphQLSchema } from "graphql";
+import { defaultFieldResolver, type GraphQLSchema } from "graphql";
 
 export type AclRoleIdentifier = string | number;
 
@@ -233,6 +233,25 @@ export class AclPlugin implements Plugin {
 
                 const fieldInfo = field.info()
                 this.addRules(`${schemaId}:${type.name}.${field.name}`, fieldInfo.allowedRoles, fieldInfo.deniedRoles);
+            }
+        }
+
+        // Subscription middleware must guard source creation and every event, independently.
+        const subscription = schema.getSubscriptionType();
+        if(subscription){
+
+            const middleware = graphQLAclMiddleware(this, schemaId, this._options);
+            if(typeof middleware !== 'function'){
+                throw new FrameworkError('Subscription ACL middleware must be a function');
+            }
+
+            for(const field of Object.values(subscription.getFields())){
+
+                const subscribe = field.subscribe ?? defaultFieldResolver;
+                const resolve = field.resolve ?? defaultFieldResolver;
+
+                field.subscribe = (source, args, context, info): unknown => middleware(subscribe, source, args, context, info);
+                field.resolve = (source, args, context, info): unknown => middleware(resolve, source, args, context, info);
             }
         }
     }
