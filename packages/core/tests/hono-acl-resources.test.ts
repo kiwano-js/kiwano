@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest';
 
 import { aclPlugin } from '../src/ts';
 
-test('authorizes each route against its own resource regardless of request order', async () => {
+test('authorizes each route against its own resource regardless of request order', async (): Promise<void> => {
 
     const acl = aclPlugin().allow('/public', 'member').deny('/secret', 'member');
     const middleware = acl.middleware();
@@ -16,7 +16,7 @@ test('authorizes each route against its own resource regardless of request order
     expect(next).toHaveBeenCalledTimes(2);
 });
 
-test('a denied first route does not prevent a later allowed route', async () => {
+test('a denied first route does not prevent a later allowed route', async (): Promise<void> => {
 
     const middleware = aclPlugin().allow('/public', 'member').middleware();
     const next = vi.fn();
@@ -27,7 +27,7 @@ test('a denied first route does not prevent a later allowed route', async () => 
     expect(next).toHaveBeenCalledOnce();
 });
 
-test('preserves explicitly configured resources without mutating their configuration', async () => {
+test('preserves explicitly configured resources without mutating their configuration', async (): Promise<void> => {
 
     const config = Object.freeze({ resource: 'api' });
     const middleware = aclPlugin().allow('api', 'member').middleware(config);
