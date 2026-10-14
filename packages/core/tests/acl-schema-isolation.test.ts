@@ -3,7 +3,7 @@ import { expect, test } from 'vitest';
 
 import { aclPlugin, schema } from '../src/ts';
 
-test('rejects shared schema namespaces before widening an already built schema', async () => {
+test('rejects shared schema namespaces before widening an already built schema', async (): Promise<void> => {
 
     const acl = aclPlugin().role('member').role('admin');
     const restricted = await schema('same-name').use(acl)
@@ -18,7 +18,7 @@ test('rejects shared schema namespaces before widening an already built schema',
     expect(result.data?.secret).toBeNull();
 });
 
-test('distinct namespaces can still share explicitly configured plugin rules', async () => {
+test('distinct namespaces can still share explicitly configured plugin rules', async (): Promise<void> => {
 
     const acl = aclPlugin().role('member').role('admin');
     const restricted = await schema('private').use(acl)
@@ -34,7 +34,7 @@ test('distinct namespaces can still share explicitly configured plugin rules', a
     expect(allowed.data?.secret).toBe('public');
 });
 
-test('rejects incompatible ACL declarations for a merged type field', async () => {
+test('rejects incompatible ACL declarations for a merged type field', async (): Promise<void> => {
 
     const restricted = schema('private')
         .query('privateAccount', 'Account', field => field.allow('member').resolver(() => ({ secret: 'private' })))
@@ -47,7 +47,7 @@ test('rejects incompatible ACL declarations for a merged type field', async () =
         .rejects.toThrow('Conflicting ACL declarations for "merged:Account.secret"');
 });
 
-test('merges equivalent policies even when role declarations have a different order', async () => {
+test('merges equivalent policies even when role declarations have a different order', async (): Promise<void> => {
 
     const first = schema('one')
         .query('one', 'Account', field => field.allow('member').resolver(() => ({ secret: 'one' })))
