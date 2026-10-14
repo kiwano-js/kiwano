@@ -76,13 +76,17 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
 
     allow(...roles: (string | number)[]): this {
 
-        roles.forEach(role => this._allowedRoles.add(role));
+        for(const role of roles){
+            this._allowedRoles.add(role);
+        }
         return this;
     }
 
     deny(...roles: (string | number)[]): this {
 
-        roles.forEach(role => this._deniedRoles.add(role));
+        for(const role of roles){
+            this._deniedRoles.add(role);
+        }
         return this;
     }
 

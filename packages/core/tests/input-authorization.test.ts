@@ -3,10 +3,10 @@ import { expect, test, vi } from 'vitest';
 
 import { aclPlugin, entitySchema, schema } from '../src/ts';
 
-test.each(['create', 'update'])('generated %s input blocks protected writes before the resolver', async operation => {
+test.each(['create', 'update'])('generated %s input blocks protected writes before the resolver', async (operation): Promise<void> => {
 
     const save = vi.fn((source, args) => ({ id: '1', isAdmin: args.input.isAdmin }));
-    const builder = entitySchema('User').use(aclPlugin({ onForbidden: () => {} }).role('member').role('admin'))
+    const builder = entitySchema('User').use(aclPlugin({ onForbidden: (): void => {} }).role('member').role('admin'))
         .entity('User', object => object
             .field('id', 'ID', field => field.allow('member', 'admin'))
             .field('isAdmin', 'Boolean', field => field.allow('admin').deny('member')))
@@ -35,7 +35,7 @@ test.each(['create', 'update'])('generated %s input blocks protected writes befo
     expect(save.mock.calls[0][1].input.isAdmin).toBe(true);
 });
 
-test('explicit input policies can separate write access from output read access', async () => {
+test('explicit input policies can separate write access from output read access', async (): Promise<void> => {
 
     const save = vi.fn(() => ({ id: '1', isAdmin: true }));
     const built = await entitySchema('User')
@@ -58,7 +58,7 @@ test('explicit input policies can separate write access from output read access'
     expect(save).toHaveBeenCalledOnce();
 });
 
-test('checks provided nested list keys including null values, without blocking omitted protected keys', async () => {
+test('checks provided nested list keys including null values, without blocking omitted protected keys', async (): Promise<void> => {
 
     const save = vi.fn(() => true);
     const built = await schema('nested-inputs')
