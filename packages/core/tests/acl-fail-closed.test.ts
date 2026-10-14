@@ -40,7 +40,7 @@ test('Hono awaits a callback and blocks next even when it returns', async (): Pr
     const next = vi.fn();
     const onForbidden = vi.fn(async (): Promise<void> => {});
     const acl = aclPlugin({ onForbidden }).role('member');
-    const context = { req: { path: '/secret' }, get: () => 'member' };
+    const context = { req: { path: '/secret' }, get: (): string => 'member' };
 
     await expect(acl.middleware()(context, next)).rejects.toThrow('No access to /secret');
     expect(onForbidden).toHaveBeenCalledOnce();
@@ -53,7 +53,7 @@ test('preserves a custom denial error and allowed resolver execution', async ():
     const acl = aclPlugin({ onForbidden: async (): Promise<void> => { throw error; } }).allow('/public', 'member');
     const next = vi.fn(async () => 'ok');
 
-    await expect(acl.middleware()({ req: { path: '/secret' }, get: () => 'member' }, next)).rejects.toBe(error);
-    await expect(acl.middleware()({ req: { path: '/public' }, get: () => 'member' }, next)).resolves.toBe('ok');
+    await expect(acl.middleware()({ req: { path: '/secret' }, get: (): string => 'member' }, next)).rejects.toBe(error);
+    await expect(acl.middleware()({ req: { path: '/public' }, get: (): string => 'member' }, next)).resolves.toBe('ok');
     expect(next).toHaveBeenCalledOnce();
 });
