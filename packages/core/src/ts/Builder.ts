@@ -7,7 +7,9 @@ import FrameworkError from "./error/FrameworkError";
 import type { Configurator, FieldRuntime, OptionalPromise } from "./common";
 import type { AbstractSchemaBuilder } from "./schema";
 
-export class BuilderError extends FrameworkError {}
+export class BuilderError extends FrameworkError {
+    static override errorName = 'BuilderError';
+}
 
 export type BuilderOrConfiguratorOrName<T> = T | Configurator<T> | string;
 export type BuilderName = string | (() => string);
