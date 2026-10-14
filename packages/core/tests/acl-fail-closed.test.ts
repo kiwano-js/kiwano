@@ -3,10 +3,10 @@ import { expect, test, vi } from 'vitest';
 
 import { aclPlugin, schema } from '../src/ts';
 
-test.each(['Query', 'Mutation', 'Account'])('returning callbacks cannot authorize denied %s fields', async scope => {
+test.each(['Query', 'Mutation', 'Account'])('returning callbacks cannot authorize denied %s fields', async (scope): Promise<void> => {
 
     const resolver = vi.fn(() => 'secret');
-    const onForbidden = vi.fn(async () => {});
+    const onForbidden = vi.fn(async (): Promise<void> => {});
     const builder = schema('fail-closed').use(aclPlugin({ onForbidden }).role('member'))
         .query('health', 'String', field => field.allow('member').resolver(() => 'ok'));
     let source: string;
@@ -35,10 +35,10 @@ test.each(['Query', 'Mutation', 'Account'])('returning callbacks cannot authoriz
     expect(resolver).not.toHaveBeenCalled();
 });
 
-test('Hono awaits a callback and blocks next even when it returns', async () => {
+test('Hono awaits a callback and blocks next even when it returns', async (): Promise<void> => {
 
     const next = vi.fn();
-    const onForbidden = vi.fn(async () => {});
+    const onForbidden = vi.fn(async (): Promise<void> => {});
     const acl = aclPlugin({ onForbidden }).role('member');
     const context = { req: { path: '/secret' }, get: () => 'member' };
 
@@ -47,10 +47,10 @@ test('Hono awaits a callback and blocks next even when it returns', async () => 
     expect(next).not.toHaveBeenCalled();
 });
 
-test('preserves a custom denial error and allowed resolver execution', async () => {
+test('preserves a custom denial error and allowed resolver execution', async (): Promise<void> => {
 
     const error = new Error('custom denial');
-    const acl = aclPlugin({ onForbidden: async () => { throw error; } }).allow('/public', 'member');
+    const acl = aclPlugin({ onForbidden: async (): Promise<void> => { throw error; } }).allow('/public', 'member');
     const next = vi.fn(async () => 'ok');
 
     await expect(acl.middleware()({ req: { path: '/secret' }, get: () => 'member' }, next)).rejects.toBe(error);
