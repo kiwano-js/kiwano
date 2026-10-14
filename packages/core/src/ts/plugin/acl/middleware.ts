@@ -22,12 +22,10 @@ export function honoAclMiddleware(acl: AclPlugin, config: AclValidateConfigType 
 
         const fullPath = c.req.path;
 
-        if(!config){
-            config = { resource: fullPath };
-        }
+        const requestConfig = config ?? { resource: fullPath };
 
         const role =  c.get(fullOptions.rolePath) ?? null;
-        const allowed = acl.validate(config, role);
+        const allowed = acl.validate(requestConfig, role);
 
         if(!allowed){
             fullOptions.onForbidden(fullPath);
