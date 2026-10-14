@@ -1,13 +1,36 @@
 # Changelog
 
-## [3.0.0-beta.9](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.8...v3.0.0-beta.9) - 2026-08-11
+## [3.0.0-beta.9](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.8...v3.0.0-beta.9) - 2026-10-14
 
 ### Fixed
 
+- Fixed built-in framework, builder, resolver, and plugin error names so they
+  remain stable when bundles are minified. Custom error subclasses retain
+  their constructor-based names unless they define their own static
+  `errorName`. ([653679b](https://github.com/kiwano-js/kiwano/commit/653679b683343b5f9c774e28b9cdc5b35c61f8b9))
+- Fixed GraphQL ACL authorization to check the schema type and field name
+  instead of the response alias, preserving the schema prefix. This prevents
+  authorization bypasses when a protected field is aliased to an accessible
+  field's name and avoids incorrect denials of allowed fields with aliases.
+  The fix applies to queries, mutations, and nested object fields.
+  ([a92eaa7](https://github.com/kiwano-js/kiwano/commit/a92eaa719272060b66d66ab056bec6e933bbc97b))
+- GraphQL ACL `onForbidden` now receives the real `Type.field` identity for
+  aliased fields. Response aliases and error paths remain intact. The HTTP
+  ACL middleware is unchanged. Applications can remove local alias workarounds
+  after upgrading to the patched version; ACL rules must use schema field
+  names rather than aliases.
 - Fixed TypeORM portable search `LIKE ... ESCAPE` clauses for MySQL and
   MariaDB by using a portable `!` escape character instead of a backslash,
   avoiding invalid SQL when fallback `LIKE` search is combined with tokenized
   search terms. ([77081df](https://github.com/kiwano-js/kiwano/commit/77081df8e3505783412c4dc39eadb0086f15f88c))
+
+### Removed
+
+- **Breaking:** Removed the public `getPathResource` helper from `@kiwano/core`
+  and `kiwano`. It used response-path keys, which can contain aliases and are
+  unsuitable for field authorization. Use `info.parentType.name` and
+  `info.fieldName` to identify a GraphQL schema field for ACL checks.
+  ([a92eaa7](https://github.com/kiwano-js/kiwano/commit/a92eaa719272060b66d66ab056bec6e933bbc97b))
 
 ## [3.0.0-beta.8](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.7...v3.0.0-beta.8) - 2026-07-27
 
