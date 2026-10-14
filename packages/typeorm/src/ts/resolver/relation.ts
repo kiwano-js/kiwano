@@ -15,7 +15,7 @@ import {
 
 import { type ModelType, relationIsMany } from "../common";
 import type { Plugin } from "../plugin";
-import { hooksExecutor, type ModelResolverHooks } from "./common";
+import { hooksExecutor, validateCountAccess, type ModelResolverHooks } from "./common";
 import { RelationLoader } from "./RelationLoader";
 
 export interface RelationResolverOptions {
@@ -27,6 +27,7 @@ export interface RelationResolverOptions {
 }
 
 export interface RelationResolverHelpers {
+    authorizeCount(): Promise<void>
     getQueryBuilder(extra?: any): Promise<SelectQueryBuilder<any>>
     fetchData(extra?: any): Promise<any>
 }
@@ -81,6 +82,10 @@ export function relationResolver<ModelType, SourceType=any, RelationModelType=ob
 
         // Create helpers
         const helpers: RelationResolverHelpers = {
+
+            async authorizeCount(): Promise<void>{
+                await validateCountAccess(hookCollections, '$relationAllowed', resolverInfo);
+            },
 
             async getQueryBuilder(extra?: any){
 

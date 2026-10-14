@@ -7,6 +7,7 @@ import {
     type AnyObject,
     type EntityFieldType,
     NotFoundError,
+    ForbiddenError,
     type Optional,
     type OptionalPromise,
     ResolverError,
@@ -29,6 +30,9 @@ export interface ModelResolverHooks<ModelType, SourceType, FetchResultType> {
 
     $beforeResolver?(info: ResolverInfo<SourceType>): OptionalPromise
     $afterResolver?(info: ResolverInfo<SourceType>): OptionalPromise
+
+    /** Explicit permission for a count query, separate from row-based access checks. */
+    $countAllowed?(info: ResolverInfo<SourceType>): OptionalPromise<boolean>
 
     $beforeFetch?(info: ResolverInfo<SourceType>): OptionalPromise;
     $afterFetch?(result: FetchResultType, info: ResolverInfo<SourceType>): OptionalPromise;
@@ -95,6 +99,21 @@ export async function executeHooks<T, R>(hookCollections: T[], methodName: strin
     }
 
     return results;
+}
+
+export async function validateCountAccess(
+    hookCollections: ModelResolverHooks<any, any, any>[],
+    rowGuardName: string,
+    info: ResolverInfo<any>
+): Promise<void> {
+
+    const hasRowGuard = hookCollections.some(hooks => typeof hooks[rowGuardName] === 'function');
+    const results = await executeHooks(hookCollections, '$countAllowed', hooks => hooks.$countAllowed(info));
+
+    // Row authorization cannot establish permission for a separate aggregate query.
+    if((hasRowGuard && results.length === 0) || results.some(result => result !== true)){
+        throw new ForbiddenError('No access to total count');
+    }
 }
 
 export function hooksExecutor<T>(hookCollections: T[]){
