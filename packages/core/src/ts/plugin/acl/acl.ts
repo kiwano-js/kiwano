@@ -250,8 +250,8 @@ export class AclPlugin implements Plugin {
                 const subscribe = field.subscribe ?? defaultFieldResolver;
                 const resolve = field.resolve ?? defaultFieldResolver;
 
-                field.subscribe = (source, args, context, info) => middleware(subscribe, source, args, context, info);
-                field.resolve = (source, args, context, info) => middleware(resolve, source, args, context, info);
+                field.subscribe = (source, args, context, info): unknown => middleware(subscribe, source, args, context, info);
+                field.resolve = (source, args, context, info): unknown => middleware(resolve, source, args, context, info);
             }
         }
     }
