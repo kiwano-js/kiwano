@@ -3,9 +3,9 @@ import { expect, test, vi } from 'vitest';
 
 import { aclPlugin, schema } from '../src/ts';
 
-async function fixture(customResolve: boolean, merge = false) {
+async function fixture(customResolve: boolean, merge = false) : Promise<{ built: import('graphql').GraphQLSchema; source: ReturnType<typeof vi.fn>; resolve: ReturnType<typeof vi.fn> }> {
 
-    const source = vi.fn(() => (async function* () {
+    const source = vi.fn(() => (async function* () : AsyncGenerator<{ updates: string }> {
 
         yield { updates: 'first private event' };
         yield { updates: 'second private event' };
@@ -22,7 +22,7 @@ async function fixture(customResolve: boolean, merge = false) {
     return { built, source, resolve };
 }
 
-test.each([true, false])('denies source creation with custom resolve=%s', async customResolve => {
+test.each([true, false])('denies source creation with custom resolve=%s', async (customResolve): Promise<void> => {
 
     const { built, source, resolve } = await fixture(customResolve);
     const result = await subscribe({
@@ -34,7 +34,7 @@ test.each([true, false])('denies source creation with custom resolve=%s', async 
     expect(resolve).not.toHaveBeenCalled();
 });
 
-test.each([true, false])('checks changed role for each event with custom resolve=%s', async customResolve => {
+test.each([true, false])('checks changed role for each event with custom resolve=%s', async (customResolve): Promise<void> => {
 
     const { built, source, resolve } = await fixture(customResolve);
     const context = { role: 'admin' };
@@ -56,7 +56,7 @@ test.each([true, false])('checks changed role for each event with custom resolve
     await stream.return?.();
 });
 
-test('guards subscriptions originating in a child schema', async () => {
+test('guards subscriptions originating in a child schema', async (): Promise<void> => {
 
     const child = await fixture(true, true);
     const result = await subscribe({
