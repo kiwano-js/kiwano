@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "watch": {
       "cache": false
     },
