@@ -22,12 +22,6 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
 
                 return (source: SourceType, args: AnyObject, context: any, info: GraphQLResolveInfo) => {
 
-                    // Return default result when available; automatic resolver is only executed when value is not found in source
-                    const defaultResult = defaultFieldResolver(source, args, context, info);
-                    if(defaultResult && !(defaultResult instanceof Promise)){
-                        return defaultResult;
-                    }
-
                     const parentFields = info.parentType.getFields();
                     const fieldType = parentFields[info.fieldName];
 
@@ -53,7 +47,8 @@ export default abstract class AbstractModelResolvers<ModelType, SourceType=any> 
                         }
                     }
 
-                    return defaultResult;
+                    // Entity fields always use their resolver and authorization hooks, even when preloaded.
+                    return defaultFieldResolver(source, args, context, info);
                 }
             }
         });
