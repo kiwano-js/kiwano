@@ -464,6 +464,13 @@ Each resolver provides numerous hooks, like `beforeFindQuery` of `transformAllRe
 You can choose to override some of these hooks to override specific parts, and use the default implementation for the remaining parts of the resolver.
 Read the [TypeORM resolvers](typeorm/resolvers.md) documentation for more information.
 
+The TypeORM `allResolver` runs `$queryAllowed` followed by `$allAllowed` for both resolver and plugin hooks, including asynchronous hooks.
+Returning `false` from either hook denies access: `$onAllNotAllowed` runs and the resolver throws `ForbiddenError` before result transformation or the deferred `totalCount` query.
+
+`$allAllowed` also runs when `$shouldFetchAll` returns `false`, such as when `itemsPaginationPlugin()` receives a query selecting only `totalCount`.
+In that case, it receives the existing empty result array and the same resolver info; no items are fetched to perform authorization.
+An empty array therefore does not necessarily mean that no matching records exist.
+
 ### 7. Build schema & run server
 
 Now our schema is finished, we can build it.

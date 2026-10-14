@@ -42,6 +42,10 @@ export interface AllResolverBaseHooks<ModelType, SourceType> extends ModelQueryR
     $modifyAllQuery?(builder: SelectQueryBuilder<ModelType>, info: AllResolverInfo<SourceType>, extra?: any): OptionalPromise
     $transformAllResult?(result: ModelType[] | any, originalResult: ModelType[], info: AllResolverInfo<SourceType>): OptionalPromise<Optional<ModelType[] | any>>
 
+    /**
+     * Runs even when fetching is skipped, receiving an empty result array in that case.
+     * An empty array does not necessarily mean that no matching records exist.
+     */
     $allAllowed?(result: ModelType[], info: AllResolverInfo<SourceType>): OptionalPromise<boolean>
     $onAllNotAllowed?(result: ModelType[], info: AllResolverInfo<SourceType>): OptionalPromise
 }
@@ -134,12 +138,9 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
             allowed = false;
         }
 
-        if(didFetch){
-
-            const allAllowedResults = await executeHooks('$allAllowed', hooks => hooks.$allAllowed(result, resolverInfo));
-            if(allAllowedResults.indexOf(false) >= 0){
-                allowed = false;
-            }
+        const allAllowedResults = await executeHooks('$allAllowed', hooks => hooks.$allAllowed(result, resolverInfo));
+        if(allAllowedResults.indexOf(false) >= 0){
+            allowed = false;
         }
 
         if(!allowed){
