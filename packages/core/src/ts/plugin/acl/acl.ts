@@ -122,6 +122,10 @@ export class AclPlugin implements Plugin {
 
     isAllowed(role: AclRoleIdentifier, resource: string): boolean {
 
+        if(role === null || role === undefined || !this._roles.has(role)){
+            return false;
+        }
+
         let determinedAction = this._options.defaultAction;
 
         const allowRules = this._findRules(resource, this._allowRules);
@@ -165,9 +169,13 @@ export class AclPlugin implements Plugin {
         return false;
     }
 
-    validate(config: AclValidateConfigType, role: string=null){
+    validate(config: AclValidateConfigType, role: AclRoleIdentifier=null){
 
-        let parsedConfig: AclValidateConfig;
+        if(role === null || role === undefined || !this._roles.has(role)){
+            return false;
+        }
+
+        let parsedConfig: AclValidateConfig = {};
 
         if(isArray(config)){
             parsedConfig = { allowedRoles: config };
@@ -181,7 +189,7 @@ export class AclPlugin implements Plugin {
 
         let allowed = this._options.defaultAction === AclAction.ALLOW;
 
-        if(role){
+        if(role !== null && role !== undefined){
 
             if(parsedConfig.allowedRoles){
 
@@ -281,7 +289,7 @@ export class AclPlugin implements Plugin {
             return [];
         }
 
-        if(!roleConfig.parent){
+        if(roleConfig.parent === null || roleConfig.parent === undefined){
             return [roleConfig.identifier];
         }
 
