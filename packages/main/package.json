@@ -1,6 +1,6 @@
 {
   "name": "kiwano",
-  "version": "3.0.0-beta.9",
+  "version": "3.0.0-beta.10",
   "description": "Kiwano lets you create GraphQL schemas programmatically, enabling you to write dynamic and modular schemas, and preventing you from writing repeating declarations.",
   "type": "module",
   "author": {
@@ -16,14 +16,14 @@
   "exports": {
     ".": {
       "source": "./src/ts/index.ts",
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist",
     "src"
