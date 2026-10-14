@@ -3,7 +3,7 @@ import { expect, test, vi } from 'vitest';
 
 import { aclPlugin, schema } from '../src/ts';
 
-test.each(['Query', 'Mutation'])('specific admin grants restrict schema grants for %s', async scope => {
+test.each(['Query', 'Mutation'])('specific admin grants restrict schema grants for %s', async (scope): Promise<void> => {
 
     const secret = vi.fn(() => 'private');
     const builder = schema('specific').allow('member').use(aclPlugin())
@@ -31,7 +31,7 @@ test.each(['Query', 'Mutation'])('specific admin grants restrict schema grants f
     expect(inherited.data?.public).toBe('public');
 });
 
-test('a field allow-list restricts a type wildcard while preserving admin inheritance', async () => {
+test('a field allow-list restricts a type wildcard while preserving admin inheritance', async (): Promise<void> => {
 
     const acl = aclPlugin().role('member').role('admin', 'member');
     const built = await schema('nested').use(acl)
@@ -49,7 +49,7 @@ test('a field allow-list restricts a type wildcard while preserving admin inheri
     expect(admin.data?.account).toEqual({ secret: 'private', public: 'public' });
 });
 
-test('a specific object allow-list restricts an inherited schema grant', async () => {
+test('a specific object allow-list restricts an inherited schema grant', async (): Promise<void> => {
 
     const built = await schema('objects').allow('member').use(aclPlugin())
         .query('account', 'Account', field => field.resolver(() => ({ secret: 'private' })))
@@ -60,7 +60,7 @@ test('a specific object allow-list restricts an inherited schema grant', async (
     expect(result.data?.account).toEqual({ secret: null });
 });
 
-test('a specific child schema grant is not broadened by its parent', async () => {
+test('a specific child schema grant is not broadened by its parent', async (): Promise<void> => {
 
     const child = schema('child').allow('admin')
         .query('secret', 'String', field => field.resolver(() => 'private'));
