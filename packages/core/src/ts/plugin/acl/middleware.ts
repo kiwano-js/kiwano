@@ -1,5 +1,3 @@
-import type { Path } from "graphql/jsutils/Path";
-
 import { defaults, get } from "es-toolkit/compat";
 
 import type { AclValidateConfigType, AclPlugin } from "./acl";
@@ -45,23 +43,18 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
 
     return (resolve, root, args, context, info) => {
 
-        const pathResource = getPathResource(info.path);
-        const parsedConfig = { resource: `${schemaName}:${pathResource}` };
+        const fieldResource = `${info.parentType.name}.${info.fieldName}`;
+        const parsedConfig = { resource: `${schemaName}:${fieldResource}` };
 
         const role = get(context, fullOptions.rolePath) ?? null;
         const allowed = acl.validate(parsedConfig, role);
 
         if(!allowed){
-            fullOptions.onForbidden(pathResource);
+            fullOptions.onForbidden(fieldResource);
         }
 
         return resolve(root, args, context, info);
     }
-}
-
-export function getPathResource(path: Path): string {
-
-    return [path.typename, path.key].join('.');
 }
 
 function getOptions(options: AclMiddlewareOptions): AclMiddlewareOptions {
