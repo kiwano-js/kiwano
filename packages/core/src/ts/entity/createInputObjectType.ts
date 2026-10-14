@@ -50,7 +50,10 @@ export class CreateInputObjectTypeBuilder extends InputObjectTypeBuilder {
                 continue;
             }
 
-            const inputField = new InputFieldBuilder(fieldInfo.name, fieldInfo.type as InputFieldType);
+            const allowedRoles = fieldInfo.allowedRoles.size > 0 ? fieldInfo.allowedRoles : entityInfo.allowedRoles;
+            const inputField = new InputFieldBuilder(fieldInfo.name, fieldInfo.type as InputFieldType)
+                .allow(...Array.from(allowedRoles))
+                .deny(...Array.from(entityInfo.deniedRoles), ...Array.from(fieldInfo.deniedRoles));
 
             if(fieldInfo.nonNull){
                 inputField.nonNull();

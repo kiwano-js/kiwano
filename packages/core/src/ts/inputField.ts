@@ -9,6 +9,13 @@ import { resolveType } from "./util";
 
 export type InputFieldType = string | GraphQLInputType;
 
+export const inputAclExtensionName = '$inputAcl';
+
+export interface InputFieldAcl {
+    allowedRoles: (string | number)[]
+    deniedRoles: (string | number)[]
+}
+
 export interface InputFieldBuilderInfo {
     name: string
     type: InputFieldType
@@ -18,6 +25,8 @@ export interface InputFieldBuilderInfo {
     nonNullList: boolean
     list: boolean
     plugins: Plugin[]
+    allowedRoles: Set<string | number>
+    deniedRoles: Set<string | number>
 }
 
 export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
@@ -26,6 +35,9 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
 
     protected _description?: string;
     protected _extensions = new Map<string, any>();
+
+    protected _allowedRoles = new Set<string | number>();
+    protected _deniedRoles = new Set<string | number>();
 
     protected _nonNull = false;
     protected _nonNullList = false;
@@ -59,6 +71,18 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
     extension(name: string, value: any): this {
 
         this._extensions.set(name, value);
+        return this;
+    }
+
+    allow(...roles: (string | number)[]): this {
+
+        roles.forEach(role => this._allowedRoles.add(role));
+        return this;
+    }
+
+    deny(...roles: (string | number)[]): this {
+
+        roles.forEach(role => this._deniedRoles.add(role));
         return this;
     }
 
@@ -128,6 +152,12 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
             type,
             description: this._description,
             extensions: {
+                ...(this._allowedRoles.size > 0 || this._deniedRoles.size > 0 ? {
+                    [inputAclExtensionName]: {
+                        allowedRoles: Array.from(this._allowedRoles),
+                        deniedRoles: Array.from(this._deniedRoles)
+                    } satisfies InputFieldAcl
+                } : {}),
                 ...Object.fromEntries(this._extensions)
             }
         }
@@ -147,7 +177,9 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
             nonNull: this._nonNull,
             nonNullList: this._nonNullList,
             list: this._list,
-            plugins: clone(this._plugins)
+            plugins: clone(this._plugins),
+            allowedRoles: new Set(this._allowedRoles),
+            deniedRoles: new Set(this._deniedRoles)
         }
     }
 }
