@@ -465,16 +465,24 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             this._plugins.forEach(plugin => subSchema.use(plugin));
             this._middleware.forEach(middleware => subSchema.use(middleware));
 
-            subSchema.allow(...Array.from(this._allowedRoles));
+            if(subSchema._allowedRoles.size === 0){
+                subSchema.allow(...Array.from(this._allowedRoles));
+            }
             subSchema.deny(...Array.from(this._deniedRoles));
 
-            subSchema.allowQuery(...Array.from(this._allowedQueryRoles));
+            if(subSchema._allowedQueryRoles.size === 0){
+                subSchema.allowQuery(...Array.from(this._allowedQueryRoles));
+            }
             subSchema.denyQuery(...Array.from(this._deniedQueryRoles));
 
-            subSchema.allowMutation(...Array.from(this._allowedMutationRoles));
+            if(subSchema._allowedMutationRoles.size === 0){
+                subSchema.allowMutation(...Array.from(this._allowedMutationRoles));
+            }
             subSchema.denyMutation(...Array.from(this._deniedMutationRoles));
 
-            subSchema.allowSubscription(...Array.from(this._allowedSubscriptionRoles));
+            if(subSchema._allowedSubscriptionRoles.size === 0){
+                subSchema.allowSubscription(...Array.from(this._allowedSubscriptionRoles));
+            }
             subSchema.denySubscription(...Array.from(this._deniedSubscriptionRoles));
         }
 
@@ -503,14 +511,22 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
 
         // Apply rules
         for(const objectType of Array.from(this._objectTypes.values())){
-            objectType.allow(...Array.from(this._allowedRoles)).deny(...Array.from(this._deniedRoles));
+            if(objectType.info().allowedRoles.size === 0){
+                objectType.allow(...Array.from(this._allowedRoles));
+            }
+
+            objectType.deny(...Array.from(this._deniedRoles));
         }
 
         const fullAllowedQueryRoles = [...Array.from(this._allowedRoles), ...Array.from(this._allowedQueryRoles)];
         const fullDeniedQueryRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedQueryRoles)];
 
         for(const queryField of this._queryObject.info().fields){
-            queryField.allow(...fullAllowedQueryRoles).deny(...fullDeniedQueryRoles);
+            if(queryField.info().allowedRoles.size === 0){
+                queryField.allow(...fullAllowedQueryRoles);
+            }
+
+            queryField.deny(...fullDeniedQueryRoles);
         }
 
         if(this._mutationObject){
@@ -519,7 +535,11 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             const fullDeniedMutationRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedMutationRoles)];
 
             for(const mutationField of this._mutationObject.info().fields){
-                mutationField.allow(...fullAllowedMutationRoles).deny(...fullDeniedMutationRoles);
+                if(mutationField.info().allowedRoles.size === 0){
+                    mutationField.allow(...fullAllowedMutationRoles);
+                }
+
+                mutationField.deny(...fullDeniedMutationRoles);
             }
         }
 
@@ -529,7 +549,11 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             const fullDeniedSubscriptionRoles = [...Array.from(this._deniedRoles), ...Array.from(this._deniedSubscriptionRoles)];
 
             for(const subscriptionField of this._subscriptionObject.info().fields){
-                subscriptionField.allow(...fullAllowedSubscriptionRoles).deny(...fullDeniedSubscriptionRoles);
+                if(subscriptionField.info().allowedRoles.size === 0){
+                    subscriptionField.allow(...fullAllowedSubscriptionRoles);
+                }
+
+                subscriptionField.deny(...fullDeniedSubscriptionRoles);
             }
         }
 
