@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.0.0-beta.11](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.10...v3.0.0-beta.11) - 2026-10-14
+
+### Fixed
+
+- Fixed TypeORM `allResolver` authorization for count-only queries: resolver
+  and plugin `$allAllowed` hooks now run even when `$shouldFetchAll` skips
+  item fetching. A `false` result still triggers `$onAllNotAllowed` and
+  `ForbiddenError` before result transformation or the deferred `totalCount`
+  query, while preserving the count-only optimization.
+  ([8d5970e](https://github.com/kiwano-js/kiwano/commit/8d5970e03dd6ca4ed62319056b9f88d8d0d4fbf7))
+- Documented that `$allAllowed` receives an empty result array when item
+  fetching is skipped; this does not necessarily mean that no matching
+  records exist. Applications can remove `$afterAllResolver` guards that
+  repeat this authorization check after upgrading.
+
 ## [3.0.0-beta.10](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.9...v3.0.0-beta.10) - 2026-10-14
 
 ### Fixed
