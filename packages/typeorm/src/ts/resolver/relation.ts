@@ -83,7 +83,7 @@ export function relationResolver<ModelType, SourceType=any, RelationModelType=ob
         // Create helpers
         const helpers: RelationResolverHelpers = {
 
-            async authorizeCount(){
+            async authorizeCount(): Promise<void>{
                 await validateCountAccess(hookCollections, '$relationAllowed', resolverInfo);
             },
 

@@ -10,7 +10,7 @@ function selection(name: string): any {
     };
 }
 
-function fixture(hooks: any = {}) {
+function fixture(hooks: any = {}) : { resolver: ReturnType<typeof allResolver>; fetch: ReturnType<typeof vi.fn>; count: ReturnType<typeof vi.fn> } {
 
     const fetch = vi.fn(async () => [{ id: 'foreign', tenant: 'other' }]);
     const count = vi.fn(async () => 1);
@@ -28,7 +28,7 @@ function fixture(hooks: any = {}) {
     return { resolver, fetch, count };
 }
 
-test('row-dependent approval of an empty array cannot authorize a count-only request', async () => {
+test('row-dependent approval of an empty array cannot authorize a count-only request', async (): Promise<void> => {
 
     const allAllowed = vi.fn((rows, info) => rows.every(row => row.tenant === info.context.tenant));
     const { resolver, fetch, count } = fixture({ $allAllowed: allAllowed });
@@ -43,7 +43,7 @@ test('row-dependent approval of an empty array cannot authorize a count-only req
     await expect(resolver(null, {}, context, selection('items'))).rejects.toThrow('No access');
 });
 
-test('preserves the optimized count query when no row-based guard is configured', async () => {
+test('preserves the optimized count query when no row-based guard is configured', async (): Promise<void> => {
 
     const { resolver, fetch, count } = fixture();
     const result = await resolver(null, {}, {}, selection('totalCount')) as any;
@@ -53,7 +53,7 @@ test('preserves the optimized count query when no row-based guard is configured'
     expect(count).toHaveBeenCalledOnce();
 });
 
-test('count permissions can be granted separately without fetching rows', async () => {
+test('count permissions can be granted separately without fetching rows', async (): Promise<void> => {
 
     const { resolver, fetch, count } = fixture({
         $allAllowed: rows => rows.every(row => row.tenant === 'own'),
@@ -68,7 +68,7 @@ test('count permissions can be granted separately without fetching rows', async 
     expect(count).toHaveBeenCalledOnce();
 });
 
-test('count hooks must explicitly return true and a denying plugin wins', async () => {
+test('count hooks must explicitly return true and a denying plugin wins', async (): Promise<void> => {
 
     await expect(validateCountAccess([{ $countAllowed: async () => undefined }], '$allAllowed', {} as any))
         .rejects.toThrow('No access to total count');
@@ -76,7 +76,7 @@ test('count hooks must explicitly return true and a denying plugin wins', async 
         .rejects.toThrow('No access to total count');
 });
 
-test('relation counts cannot bypass a row-dependent relation policy', async () => {
+test('relation counts cannot bypass a row-dependent relation policy', async (): Promise<void> => {
 
     const dataSource: any = {
         getRepository: () => ({

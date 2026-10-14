@@ -74,7 +74,7 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
         // Create helpers
         const helpers: AllResolverHelpers = {
 
-            async authorizeCount(){
+            async authorizeCount(): Promise<void>{
                 await validateCountAccess(hookCollections, '$allAllowed', resolverInfo);
             },
 
