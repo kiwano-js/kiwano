@@ -54,6 +54,9 @@ export class AclPlugin implements Plugin {
     protected _allowRules = new Map<string, AclRuleConfig>()
     protected _denyRules = new Map<string, AclRuleConfig>()
 
+    protected _schemaOwners = new Map<string, SchemaBuilder>();
+    protected _rulePolicies = new Map<string, string>();
+
     constructor(options?: AclOptions) {
 
         this._options = defaults(options || {}, defaultAclMiddlewareOptions, defaultAclOptions);
@@ -215,6 +218,15 @@ export class AclPlugin implements Plugin {
 
     beforeBuildSchema(builder: SchemaBuilder, rootBuilder: SchemaBuilder) {
 
+        const schemaId = rootBuilder.name || rootBuilder.tag.toString();
+        const owner = this._schemaOwners.get(schemaId);
+
+        if(owner && owner !== rootBuilder){
+            throw new FrameworkError(`ACL namespace "${schemaId}" is already bound to another schema`);
+        }
+
+        this._schemaOwners.set(schemaId, rootBuilder);
+
         // Add middleware
         builder.use(graphQLAclMiddleware(this, rootBuilder.name || rootBuilder.tag.toString(), this._options));
     }
@@ -238,6 +250,15 @@ export class AclPlugin implements Plugin {
     }
 
     protected addRules(resource: string, allowed: Set<string>, denied: Set<string>){
+
+        const policy = JSON.stringify([Array.from(allowed).sort(), Array.from(denied).sort()]);
+        const existingPolicy = this._rulePolicies.get(resource);
+
+        if(existingPolicy !== undefined && existingPolicy !== policy){
+            throw new FrameworkError(`Conflicting ACL declarations for "${resource}"`);
+        }
+
+        this._rulePolicies.set(resource, policy);
 
         if(allowed.size > 0){
             this.allow(resource, Array.from(allowed));
