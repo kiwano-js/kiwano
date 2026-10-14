@@ -17,6 +17,7 @@ import {
 } from "@kiwano/core";
 
 import { addRelationJoin, type Plugin } from "../common";
+import { assertPredicateFieldAccess } from "../predicate";
 import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
 
 export interface ISortPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
@@ -75,6 +76,7 @@ export class SortPluginHooks implements ISortPluginHooks {
     applySort(builder: SelectQueryBuilder<any>, config: SortConfiguration<any>, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
 
         const relationConfig = this._options.relations.find(relation => relation.name === config.field);
+        assertPredicateFieldAccess(info, [relationConfig?.relationField ?? config.field], relationConfig?.relation);
 
         if(relationConfig){
             this.applyRelationSort(builder, config, relationConfig, metadata);

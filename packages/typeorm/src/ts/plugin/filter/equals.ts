@@ -20,6 +20,7 @@ import {
 } from "@kiwano/core";
 
 import { addRelationJoin, type Plugin } from "../common";
+import { assertPredicateFieldAccess } from "../predicate";
 import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
 
 export interface IEqualsFilterPluginHooks extends AllResolverBaseHooks<any, any>, RelationResolverBaseHooks<any, any> {}
@@ -88,6 +89,8 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
             if(value !== null){
 
                 const relationConfig = this._options.relations.find(relation => relation.name === key);
+                assertPredicateFieldAccess(info, [relationConfig?.relationField ?? key], relationConfig?.relation);
+
                 const filterConfig: FilterFieldConfig<any | any[]> = { key, value, relation: relationConfig || null }
 
                 this.addCondition(builder, filterConfig, filter, metadata);

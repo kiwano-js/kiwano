@@ -1,4 +1,4 @@
-import { isArray, isString, isNumber, sortBy, escapeRegExp, defaults } from 'es-toolkit/compat'
+import { isArray, isString, isNumber, sortBy, escapeRegExp, defaults, get } from 'es-toolkit/compat'
 
 import {
     type AclMiddlewareOptions,
@@ -13,6 +13,9 @@ import type { SchemaBuilder } from "../../schema";
 import type { GraphQLSchema } from "graphql";
 
 export type AclRoleIdentifier = string | number;
+
+export const aclFieldValidatorExtensionName = '$aclFieldValidator';
+export type AclFieldValidator = (context: unknown, typeName: string, fieldName: string) => boolean;
 
 interface AclRoleConfig {
     identifier: AclRoleIdentifier
@@ -235,6 +238,13 @@ export class AclPlugin implements Plugin {
                 this.addRules(`${schemaId}:${type.name}.${field.name}`, fieldInfo.allowedRoles, fieldInfo.deniedRoles);
             }
         }
+
+        schema.extensions = {
+            ...schema.extensions,
+            [aclFieldValidatorExtensionName]: ((context, typeName, fieldName) => {
+                return this.validate({ resource: `${schemaId}:${typeName}.${fieldName}` }, get(context, this._options.rolePath) ?? null);
+            }) satisfies AclFieldValidator
+        };
     }
 
     protected addRules(resource: string, allowed: Set<string>, denied: Set<string>){

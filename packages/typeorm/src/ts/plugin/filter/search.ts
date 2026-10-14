@@ -15,11 +15,13 @@ import {
     ObjectTypeBuilder,
     type OptionalPromise,
     PluginError,
+    ForbiddenError,
     SearchFilterPlugin as CoreSearchFilterPlugin,
     type SearchFilterPluginOptions as CoreSearchFilterPluginOptions
 } from "@kiwano/core";
 
 import { addRelationJoin, type Plugin } from "../common";
+import { isPredicateFieldAllowed } from "../predicate";
 import type { AllResolverBaseHooks, AllResolverInfo, RelationResolverBaseHooks, RelationResolverInfo } from "../../resolver";
 import { getDatabaseType } from "../../util";
 
@@ -57,6 +59,7 @@ export interface SearchFilterPluginOptions extends CoreSearchFilterPluginOptions
 }
 
 export interface SearchFieldConfig {
+    automatic?: boolean
     fields?: string[]
     relation?: SearchFilterPluginRelationField
     options?: SearchFieldOptions
@@ -135,6 +138,25 @@ export class SearchFilterPluginHooks implements ISearchFilterPluginHooks {
     }
 
     applySearch(builder: SelectQueryBuilder<any>, fields: Set<SearchFieldConfig>, searchQuery: string, metadata: EntityMetadata, info: AllResolverInfo<any> | RelationResolverInfo<any>){
+
+        const readableFields = new Set<SearchFieldConfig>();
+
+        for(const field of fields){
+
+            const names = field.relation?.relationFields ?? field.fields ?? [];
+            if(isPredicateFieldAllowed(info, names, field.relation?.relation)){
+                readableFields.add(field);
+            }
+            else if(!field.automatic){
+                throw new ForbiddenError('No access to configured search predicate');
+            }
+        }
+
+        if(fields.size > 0 && readableFields.size === 0){
+            throw new ForbiddenError('No accessible search fields');
+        }
+
+        fields = readableFields;
 
         const paramNameBase = 'searchQuery';
         const searchTerms = this.getSearchTerms(searchQuery);
@@ -550,7 +572,7 @@ export class SearchFilterPlugin extends CoreSearchFilterPlugin implements Plugin
 
                 const fieldInfo = field.info();
                 if(!fieldInfo.list && allowedSearchTypes.indexOf(fieldInfo.type) >= 0){
-                    configs.push({ fields: [field.name] });
+                    configs.push({ fields: [field.name], automatic: true });
                 }
             }
         }
