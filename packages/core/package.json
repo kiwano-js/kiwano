@@ -1,11 +1,11 @@
 {
   "name": "@kiwano/core",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && node tests/graphql-acl.test.js",
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.json",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.0",
+    "@types/node": "^20.11.30",
     "graphql": "^16.8.1",
     "rimraf": "^5.0.5",
     "typescript": "^5.4.3"
