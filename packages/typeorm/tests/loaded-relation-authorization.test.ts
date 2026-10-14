@@ -4,19 +4,19 @@ import { EntityFieldType, entityFieldTypeExtensionName, schema } from '@kiwano/c
 
 import { ModelEntityResolvers, resolverOptionsExtensionName } from '../src/ts';
 
-async function fixture(allowed: boolean, secrets: unknown) {
+async function fixture(allowed: boolean, secrets: unknown) : Promise<{ built: import('graphql').GraphQLSchema; authorize: ReturnType<typeof vi.fn>; fetch: ReturnType<typeof vi.fn> }> {
 
     const authorize = vi.fn(() => allowed);
     const fetch = vi.fn(() => [{ id: 'scoped' }]);
 
     class EntityResolvers extends ModelEntityResolvers<any> {
 
-        $relationAllowed() {
+        $relationAllowed() : boolean {
 
             return authorize();
         }
 
-        $fetchRelation() {
+        $fetchRelation() : { id: string }[] {
 
             return fetch();
         }
@@ -46,7 +46,7 @@ async function fixture(allowed: boolean, secrets: unknown) {
     return { built, authorize, fetch };
 }
 
-test.each([[], [{ id: 'private' }]])('preloaded relations still run access hooks for %j', async value => {
+test.each([[], [{ id: 'private' }]])('preloaded relations still run access hooks for %j', async (value): Promise<void> => {
 
     const { built, authorize } = await fixture(false, value);
     const result = await graphql({ schema: built, source: '{ account { name secrets { id } } }' });
@@ -56,7 +56,7 @@ test.each([[], [{ id: 'private' }]])('preloaded relations still run access hooks
     expect(authorize).toHaveBeenCalledOnce();
 });
 
-test('loaded values cannot replace the scoped authorized result', async () => {
+test('loaded values cannot replace the scoped authorized result', async (): Promise<void> => {
 
     const { built, authorize, fetch } = await fixture(true, [{ id: 'private' }]);
     const result = await graphql({ schema: built, source: '{ account { secrets { id } } }' });
@@ -67,7 +67,7 @@ test('loaded values cannot replace the scoped authorized result', async () => {
     expect(fetch).toHaveBeenCalledOnce();
 });
 
-test('unloaded relations retain the same authorization path', async () => {
+test('unloaded relations retain the same authorization path', async (): Promise<void> => {
 
     const { built, authorize } = await fixture(false, undefined);
     const result = await graphql({ schema: built, source: '{ account { secrets { id } } }' });
