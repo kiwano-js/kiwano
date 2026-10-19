@@ -45,7 +45,6 @@
   "peerDependencies": {
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
     "@graphql-tools/schema": "^10.0.3",
-    "graphql-middleware": "^6.1.35",
     "pluralize": "^8.0.0",
     "es-toolkit": "^1.33.0"
   },

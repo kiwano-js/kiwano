@@ -6,6 +6,7 @@ import { GraphQLList, GraphQLNonNull } from "graphql";
 import Builder, { type BuildContext, type FinalizeContext, type BuilderName } from "./Builder";
 import type { Plugin } from "./plugin";
 import { resolveType } from "./util";
+import { rejectNullExtensionName } from "./inputValidation";
 
 export type InputFieldType = string | GraphQLInputType;
 
@@ -68,6 +69,11 @@ export class InputFieldBuilder extends Builder<GraphQLInputFieldConfig> {
 
         this._nonNull = nonNull;
         return this;
+    }
+
+    rejectNull(rejectNull = true): this {
+
+        return this.extension(rejectNullExtensionName, rejectNull);
     }
 
     list(): this;

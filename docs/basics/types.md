@@ -146,3 +146,35 @@ schema.inputObject('CreateProjectInput', _ => _
     .field('title', 'String!')
 )
 ```
+
+### Optional fields that reject null
+
+Use `.rejectNull()` on an input field to allow omission while rejecting an
+explicit `null` value:
+
+```typescript
+schema.inputObject('UpdateCustomerInput', _ => _
+    .field('name', 'String', field => field.rejectNull())
+    .field('contactId', 'ID')
+)
+```
+
+Here, `name` can be omitted or set to a string. `contactId` can additionally be
+set to `null` to clear the association, if the resolver supports that operation.
+Use `.rejectNull(false)` to disable the rule. Unlike `.nonNull()`, `.rejectNull()`
+does not require the field to be present.
+
+Generated update inputs automatically use this rule for non-null entity fields;
+the `id` field remains required. Manually configured update fields take precedence.
+
+Kiwano installs validation when `.build()` completes. It applies to custom and
+generated resolvers, including nested input objects and lists. Subscription input
+is checked before opening the stream. Invalid input raises `InvalidInputError`
+before the affected resolver runs; other fields in the operation may already have
+executed.
+
+The GraphQL field type remains nullable. The rule is stored in the input field's
+`extensions` under the exported `rejectNullExtensionName` key. Standard schema
+introspection and GraphQL TypeScript generators do not reflect this additional
+constraint automatically; custom generators can use the metadata on the built
+schema or the input builder's `.info().extensions`.

@@ -1,7 +1,6 @@
 import { isFunction, clone, compact, isString, isArray, isObjectLike } from 'es-toolkit/compat'
 
 import { mergeSchemas } from "@graphql-tools/schema";
-import { applyMiddleware } from "graphql-middleware";
 
 import type { GraphQLSchemaConfig } from "graphql/type/schema";
 import type { GraphQLFieldResolver } from "graphql/type/definition";
@@ -28,6 +27,8 @@ import { BuildContext, BuilderError, FinalizeContext, resolveName } from "./Buil
 import type { NamingStrategy } from "./naming";
 import type { Plugin } from "./plugin";
 import type { Configurator, FieldRuntime, Middleware, OptionalPromise } from "./common";
+import { applyInputValidation } from "./inputValidation";
+import { applyMiddleware } from "./resolver";
 
 const DefaultScalars = [GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID];
 
@@ -572,6 +573,8 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
         const schema = await this.buildSchema(resolvedTypes);
 
         this._executePluginsSync('afterBuild', plugin => plugin.afterBuild(this, schema));
+
+        applyInputValidation(schema);
 
         return schema;
     }

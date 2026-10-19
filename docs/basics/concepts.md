@@ -109,10 +109,13 @@ In this example, schema D will contain all elements from schema A, B and C combi
 When adding the `sortPlugin` to a query-field for example, a sorting-argument will be added to the field automatically.
 When using the Kiwano TypeORM package, plug-ins even enrich resolvers to automatically apply the sorting itself (in this example).
 
-**Middleware** enables you to execute a function before any field is being resolved.
-The external package [graphql-middleware](https://github.com/maticzav/graphql-middleware) is used to facilitate this, please see their documentation for more information.
+**Middleware** enables you to execute code before and after a field is resolved.
+Kiwano applies middleware directly to the built schema, independently of the
+GraphQL server or executor. Register middleware functions on a schema with `.use()`.
+The first middleware registered runs first before the resolver and last after it.
 
-Both plug-ins and middleware can be assigned to any element (including schemas itself) using the `use()` method:
+Plug-ins can be assigned to builders with `.use()`. Middleware functions are
+registered on schemas:
 
 ```typescript
 schema
@@ -130,6 +133,21 @@ schema
 ```
 
 > See the [Using plug-ins](plugins/overview.md) section for more details about plug-ins.
+
+The first middleware argument calls the next middleware or the resolver. Calling
+it without arguments forwards the original source, arguments, context and resolver
+info. You can override these by passing arguments, transform the returned result,
+or reject execution by throwing an error without calling the next function.
+
+Middleware also applies to fields using GraphQL's default resolver. Introspection
+fields are excluded. On subscription root fields, middleware runs before
+`subscribe`, even when a custom event `resolve` function is present; it does not
+run again for each event on that root field. Nested fields in subscription results
+use their normal resolver middleware.
+
+Kiwano's `Middleware` type describes middleware functions. The middleware maps,
+generators and fragment options provided by the former `graphql-middleware`
+dependency are not part of this API.
 
 ## Instantiation
 

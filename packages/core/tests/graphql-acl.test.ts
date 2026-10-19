@@ -1,4 +1,4 @@
-import { graphql, type ExecutionResult, type GraphQLResolveInfo } from 'graphql';
+import { graphql, parse, subscribe, type ExecutionResult, type GraphQLResolveInfo } from 'graphql';
 import type { Path } from 'graphql/jsutils/Path';
 import { describe, expect, test, vi, type Mock } from 'vitest';
 
@@ -323,5 +323,35 @@ test('keeps ACL rules isolated by the schema prefix', async (): Promise<void> =>
     expect(result.data).toEqual({ viewer: null });
     expect(result.errors?.[0].message).toBe('No access to Query.viewer');
     expect(resolver).not.toHaveBeenCalled();
+});
+
+test('authorizes subscriptions before opening a stream when a custom event resolver is present', async (): Promise<void> => {
+
+    const openStream = vi.fn(async function*(): AsyncGenerator<string> {
+
+        yield 'first';
+        yield 'second';
+    });
+    const middleware: Middleware = vi.fn(next => next());
+    const builtSchema = await schema('acl-subscription')
+        .query('health', 'String')
+        .subscription('updates', 'String', field => field.allow('admin'))
+        .subscriptionResolvers({ updates: { subscribe: openStream, resolve: (payload: string): string => payload.toUpperCase() } })
+        .use(middleware)
+        .use(aclPlugin().role('admin').role('member'))
+        .build();
+    const document = parse('subscription { updates }');
+    const denied = await subscribe({ schema: builtSchema, document, contextValue: { role: 'member' } }) as ExecutionResult;
+
+    expect(denied.errors?.[0].message).toBe('No access to Subscription.updates');
+    expect(openStream).not.toHaveBeenCalled();
+
+    const allowed = await subscribe({ schema: builtSchema, document, contextValue: { role: 'admin' } }) as AsyncIterableIterator<ExecutionResult>;
+
+    expect(openStream).toHaveBeenCalledOnce();
+    expect((await allowed.next()).value.data).toEqual({ updates: 'FIRST' });
+    expect((await allowed.next()).value.data).toEqual({ updates: 'SECOND' });
+    expect(middleware).toHaveBeenCalledTimes(2);
+    await allowed.return?.();
 });
 

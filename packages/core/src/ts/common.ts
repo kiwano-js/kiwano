@@ -1,7 +1,13 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLFieldResolver } from "graphql/type/definition";
 
-export type { IMiddleware as Middleware } from "graphql-middleware";
+export type Middleware<TSource = any, TContext = any, TArgs = AnyObject> = (
+    resolve: (...args: Partial<Parameters<GraphQLFieldResolver<TSource, TContext, TArgs>>>) => ReturnType<GraphQLFieldResolver<TSource, TContext, TArgs>>,
+    source: TSource,
+    args: TArgs,
+    context: TContext,
+    info: GraphQLResolveInfo
+) => ReturnType<GraphQLFieldResolver<TSource, TContext, TArgs>>;
 
 export type ConstructorType<T> = new (...args:any[]) => T;
 export type OptionalPromise<T=void> = Promise<T> | T;

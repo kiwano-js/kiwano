@@ -54,6 +54,9 @@ export class UpdateInputObjectTypeBuilder extends InputObjectTypeBuilder {
             if(isFieldId(fieldInfo)){
                 inputField.nonNull();
             }
+            else if(fieldInfo.nonNull){
+                inputField.rejectNull();
+            }
 
             if(fieldInfo.list){
                 inputField.list();

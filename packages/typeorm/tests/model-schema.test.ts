@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { EntityFieldType, entityFieldTypeExtensionName } from '@kiwano/core';
+import { EntityFieldType, entityFieldTypeExtensionName, rejectNullExtensionName, type UpdateInputObjectTypeBuilder } from '@kiwano/core';
 
 import modelSchema, { ModelEntityResolvers, ModelMutationResolvers, ModelQueryResolvers, resolverOptionsExtensionName } from '../src/ts';
 
@@ -85,4 +85,38 @@ test('generates model fields, input objects and resolver metadata for the use ca
     expect((builder.compiledResolvers as any).Query).toBeInstanceOf(ModelQueryResolvers);
     expect((builder.compiledResolvers as any).Mutation).toBeInstanceOf(ModelMutationResolvers);
     expect((builder.compiledResolvers as any).Device).toBeInstanceOf(ModelEntityResolvers);
+});
+
+test('preserves model nullability as rejectNull rules in generated update inputs', async (): Promise<void> => {
+
+    const dataSource = createFakeDataSource([
+        {
+            model: TestDevice,
+            name: 'Device',
+            columns: [
+                { propertyName: 'id', type: 'uuid', isPrimary: true },
+                { propertyName: 'name', type: 'varchar' },
+                { propertyName: 'ownerId', type: 'uuid', isNullable: true }
+            ],
+            relations: [
+                {
+                    propertyName: 'owner',
+                    inverseEntityMetadata: { name: 'Owner' },
+                    isNullable: true,
+                    joinColumns: [{ propertyName: 'ownerId' }]
+                }
+            ]
+        }
+    ]);
+    const builder = modelSchema(TestDevice, { dataSource }).update();
+
+    await builder.finalize();
+
+    const input = builder.locateType('UpdateDeviceInput')?.type as UpdateInputObjectTypeBuilder;
+    const fields = input.info().fields.map(field => field.info());
+
+    expect(fields.find(field => field.name === 'id').nonNull).toBe(true);
+    expect(fields.find(field => field.name === 'name').nonNull).toBe(false);
+    expect(fields.find(field => field.name === 'name').extensions.get(rejectNullExtensionName)).toBe(true);
+    expect(fields.find(field => field.name === 'ownerId').extensions.get(rejectNullExtensionName)).toBeUndefined();
 });
