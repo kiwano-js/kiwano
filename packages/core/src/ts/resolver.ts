@@ -2,7 +2,8 @@ import { mergeSchemas } from "@graphql-tools/schema";
 
 import { defaultFieldResolver, type GraphQLFieldResolver, type GraphQLSchema, isObjectType } from "graphql";
 
-import type { Middleware } from "./common";
+import type { FieldAccessHook, Middleware, ResolverInfo } from "./common";
+import { ForbiddenError } from "./error/resolver/ForbiddenError";
 
 export function wrapResolver<TSource, TContext, TArgs>(
     resolver: GraphQLFieldResolver<TSource, TContext, TArgs>,
@@ -23,6 +24,31 @@ export function wrapResolver<TSource, TContext, TArgs>(
 
         return middleware.call(this, next, source, args, context, info);
     };
+}
+
+export function wrapResolverWithAccessChecks(
+    resolver: GraphQLFieldResolver<unknown, unknown>,
+    ...hooks: FieldAccessHook[]
+): GraphQLFieldResolver<unknown, unknown> {
+
+    const checks = hooks.filter(hook => !!hook);
+    if(!checks.length){
+        return resolver;
+    }
+
+    return wrapResolver(resolver || defaultFieldResolver, async (next, source, args, context, info) => {
+
+        const input: ResolverInfo<unknown> = { source, args, context, info };
+
+        for(const check of checks){
+
+            if(await check(input) !== true){
+                throw new ForbiddenError(`No access to ${info.parentType.name}.${info.fieldName}`);
+            }
+        }
+
+        return next(source, args, input.context, info);
+    });
 }
 
 export function applyMiddleware(schema: GraphQLSchema, ...middlewares: Middleware[]): GraphQLSchema {

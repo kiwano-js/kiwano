@@ -24,7 +24,13 @@ export interface ResolverInfo<ST> {
     info: GraphQLResolveInfo
 }
 
+export type FieldAccessHook = (input: ResolverInfo<any>) => OptionalPromise<boolean>;
+
 export interface FieldRuntime {
+    canAccess?: FieldAccessHook
+    canSubscribe?: FieldAccessHook
+    canResolve?: FieldAccessHook
+
     resolve?: GraphQLFieldResolver<any, any>
     subscribe?: GraphQLFieldResolver<any, any>
 }

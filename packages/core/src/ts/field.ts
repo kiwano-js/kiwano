@@ -9,6 +9,7 @@ import Builder, { type BuildContext, type FinalizeContext, type BuilderName, Bui
 import type { Configurator } from "./common";
 import type { Plugin } from "./plugin";
 import { getAclExtension, resolveType } from './util';
+import { wrapResolverWithAccessChecks } from "./resolver";
 
 export interface FieldBuilderInfo {
     name: string
@@ -216,7 +217,11 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
         }
 
         const fieldRuntime = context.getFieldRuntime(parentBuilder.name, this.name);
-        const resolver = this._resolver || fieldRuntime?.resolve;
+        const resolver = wrapResolverWithAccessChecks(
+            this._resolver || fieldRuntime?.resolve,
+            fieldRuntime?.canAccess,
+            fieldRuntime?.canResolve
+        );
 
         const field: GraphQLFieldConfig<any, any> = {
             type,
@@ -227,7 +232,7 @@ export class FieldBuilder extends Builder<GraphQLFieldConfig<any, any>> {
                 ...Object.fromEntries(this._extensions)
             },
             ...(resolver ? { resolve: resolver } : {}),
-            ...(fieldRuntime?.subscribe ? { subscribe: fieldRuntime.subscribe } : {})
+            ...(fieldRuntime?.subscribe ? { subscribe: wrapResolverWithAccessChecks(fieldRuntime.subscribe, fieldRuntime.canAccess, fieldRuntime.canSubscribe) } : {})
         }
 
         this._executePluginsSync('afterBuildField', plugin => plugin.afterBuildField(this, context, info, field));

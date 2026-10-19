@@ -141,9 +141,15 @@ or reject execution by throwing an error without calling the next function.
 
 Middleware also applies to fields using GraphQL's default resolver. Introspection
 fields are excluded. On subscription root fields, middleware runs before
-`subscribe`, even when a custom event `resolve` function is present; it does not
-run again for each event on that root field. Nested fields in subscription results
-use their normal resolver middleware.
+`subscribe`, even when a custom event `resolve` function is present. Middleware
+retains its start-only behavior, including the ACL check for the subscription field.
+Nested fields in subscription results use their normal resolver middleware.
+
+Subscription runtimes can also declare optional `canAccess`, `canSubscribe` and
+`canResolve` checks. At subscription start, these run after ACL authorization and
+before `subscribe`. Event checks run before each `resolve` without repeating the
+subscription field's ACL check. See [Subscription runtimes and access checks](types.md#subscription-runtimes-and-access-checks)
+for the contract and examples.
 
 Kiwano's `Middleware` type describes middleware functions. The middleware maps,
 generators and fragment options provided by the former `graphql-middleware`

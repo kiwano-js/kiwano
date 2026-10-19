@@ -133,6 +133,122 @@ Denies the specified roles to access the type
 
 Returns info about the type
 
+## Subscription runtimes and access checks
+
+Subscription resolver maps can contain a `FieldRuntime` object or a method that
+creates one. A subscription runtime can declare these optional access checks:
+
+```typescript
+export type FieldAccessHook = (
+    input: ResolverInfo<any>
+) => OptionalPromise<boolean>;
+
+export interface FieldRuntime {
+    canAccess?: FieldAccessHook;
+    canSubscribe?: FieldAccessHook;
+    canResolve?: FieldAccessHook;
+
+    subscribe?: GraphQLFieldResolver<any, any>;
+    resolve?: GraphQLFieldResolver<any, any>;
+}
+```
+
+`ResolverInfo` contains `source`, `args`, `context` and GraphQL's `info`. Access
+checks receive that single object. The existing `subscribe` and `resolve`
+functions retain their four arguments: `(source, args, context, info)`.
+
+Kiwano executes the checks in this order:
+
+| Operation                       | Order                                            |
+| ------------------------------- | ------------------------------------------------ |
+| Start a subscription            | ACL → `canAccess` → `canSubscribe` → `subscribe` |
+| Resolve each subscription event | `canAccess` → `canResolve` → `resolve`           |
+
+ACL is checked at subscription start when an ACL plugin is configured. Hooks are
+never added automatically: missing hooks impose no additional condition. Every declared
+applicable hook must return `true`; a specific hook never replaces `canAccess`.
+`canSubscribe` is only used when starting a subscription, and `canResolve` is
+only used when resolving a subscription event.
+
+Checks can be synchronous or asynchronous and are awaited in order. A refusal
+raises Kiwano's standard `ForbiddenError`. A thrown or rejected error propagates
+unchanged. In either case, subsequent checks and the resolver are not called.
+Hook results only control access; they are never used as field results.
+
+These hooks apply only to subscriptions. Normal query, mutation and object-type
+resolvers remain resolver functions and may return ordinary objects, including
+objects with properties named `resolve` or `canAccess`. Only methods in a
+subscription resolver map are treated as runtime factories during schema
+construction.
+
+If a subscription's `resolve` is omitted, checks run before GraphQL's
+`defaultFieldResolver`. An explicit `.resolver(...)` on the subscription field
+overrides its event resolve function but retains the runtime's access checks.
+
+### A subscription with only canAccess
+
+```typescript
+schema
+    .subscription('changes', 'String')
+    .subscriptionResolvers({
+        changes: {
+            canAccess({ context }) {
+                return context.canReadChanges();
+            },
+            subscribe(_source, args, context) {
+                return context.changeEvents(args);
+            }
+        }
+    });
+```
+
+Here, each event contains a `changes` property, which the default resolver reads.
+`canAccess` runs once before opening the stream and again before each event
+result. If it performs a database query, that query therefore runs at subscription
+start **and for every event**, rather than once for the lifetime of the stream.
+
+### Common and phase-specific subscription checks
+
+```typescript
+schema
+    .subscription('changes', 'String')
+    .subscriptionResolvers({
+        changes() {
+            return {
+                canAccess({ context }) {
+                    return context.canReadChanges();
+                },
+                canSubscribe({ context }) {
+                    return context.canOpenChangeStream();
+                },
+                canResolve({ source, context }) {
+                    return context.canReadEvent(source);
+                },
+                subscribe(_source, args, context) {
+                    return context.changeEvents(args);
+                },
+                resolve(event) {
+                    return event.value;
+                }
+            };
+        }
+    });
+```
+
+Runtime factory methods, hooks and runtime functions retain the resolver
+container as `this`, including class instances. They are not rebound to the
+returned descriptor object.
+
+Hooks may refresh the existing context object. Later checks and the resolver
+observe these updates. A hook can also replace `input.context`; that replacement
+is forwarded to later checks and the resolver for the current invocation. Each
+invocation gets a new `ResolverInfo` object; in-place changes to the shared
+context remain available to later subscription events.
+
+Runtimes without access hooks retain their existing behavior. ACL authorization
+for the subscription field is only performed when opening the stream. Use
+`canAccess` or `canResolve` to check current access before each event result.
+
 ## Inputs
 
 Both `field` and `objectType` have a counterpart used for mutations: `inputField` and `inputObjectType`.

@@ -707,14 +707,24 @@ export abstract class AbstractSchemaBuilder<NS extends NamingStrategy> {
             throw new BuilderError(`Subscription resolver "${fieldName}" must define a subscribe function`);
         }
 
-        if(input.resolve && !isFunction(input.resolve)){
-            throw new BuilderError(`Subscription resolver "${fieldName}" must define resolve as a function`);
+        const runtime: FieldRuntime = {};
+        const names = ['canAccess', 'canSubscribe', 'canResolve', 'subscribe', 'resolve'] as const;
+
+        for(const name of names){
+
+            const fn = input[name];
+            if(fn == null){
+                continue;
+            }
+
+            if(!isFunction(fn)){
+                throw new BuilderError(`Field runtime "${fieldName}" must define ${name} as a function`);
+            }
+
+            runtime[name] = fn.bind(context);
         }
 
-        return {
-            subscribe: input.subscribe.bind(context),
-            resolve: input.resolve?.bind(context)
-        };
+        return runtime;
     }
 }
 
