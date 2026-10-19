@@ -1,5 +1,45 @@
 # Changelog
 
+## [3.0.0-beta.12](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.11...v3.0.0-beta.12) - 2026-10-19
+
+### Added
+
+- Added `.rejectNull()` for input fields: a field can be omitted while an
+  explicit `null` raises `InvalidInputError`. Validation applies centrally to
+  custom and generated resolvers, including nested input objects and lists.
+  The rule is available as input-field extension metadata; standard GraphQL
+  introspection and generated TypeScript types do not reflect it automatically.
+  ([803797f](https://github.com/kiwano-js/kiwano/commit/803797f990c244d5490eb9b9668178390177db0d))
+- Added optional `canAccess`, `canSubscribe`, and `canResolve` hooks to
+  subscription runtimes. Subscription start runs ACL, `canAccess`, and
+  `canSubscribe` before `subscribe`; each event runs `canAccess` and
+  `canResolve` before the custom or default resolver. Hooks are awaited in
+  order, `false` raises `ForbiddenError`, and thrown errors propagate unchanged.
+  A database check in `canAccess` therefore runs at start and for every event.
+  ([8048057](https://github.com/kiwano-js/kiwano/commit/8048057013303b1483126303e836fc55d2b1de30))
+
+### Changed
+
+- **Breaking:** Generated update inputs now reject explicit `null` for non-null
+  entity fields while still allowing omission. IDs remain required, nullable
+  entity fields still accept `null`, and manually configured input fields take
+  precedence. These optional fields retain nullable GraphQL types.
+- **Breaking:** Replaced the `graphql-middleware` dependency with Kiwano's own
+  resolver wrappers. The exported `Middleware` type now supports middleware
+  functions; `graphql-middleware` maps, generators, and fragment options are no
+  longer part of this API. Existing function middleware retains registration
+  order and can forward or override resolver arguments.
+
+### Fixed
+
+- Fixed subscription middleware and ACL checks to run before opening the
+  stream even when a custom event `resolve` is configured. The subscription
+  field's ACL check runs only at start; event checks belong in the access hooks.
+- Prevented duplicate middleware execution on shared types in merged schemas.
+- Fixed workspace build ordering so `@kiwano/core` builds before its dependent
+  packages, marked the monorepo root private, and removed the root publish task.
+  ([8eb4b73](https://github.com/kiwano-js/kiwano/commit/8eb4b73f1773a13d534e7dfb4694e54c509031d6))
+
 ## [3.0.0-beta.11](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.10...v3.0.0-beta.11) - 2026-10-14
 
 ### Fixed
