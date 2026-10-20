@@ -152,7 +152,7 @@ export class ModelObjectTypeBuilder extends ObjectTypeBuilder {
             }
 
             if(relationIsMany(relation)){
-                field.list();
+                field.nonNullList();
             }
 
             if(this._includeDeletedRelations){
