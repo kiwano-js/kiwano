@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0-beta.13](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.12...v3.0.0-beta.13) - 2026-10-20
+
+### Fixed
+
+- Fixed generated TypeORM one-to-many and many-to-many relation fields to use
+  non-null list items, such as `[Owner!]` instead of `[Owner]`. List nullability
+  still follows relation metadata. Custom relation resolvers must not return
+  `null` elements; regenerated client types reflect the stricter item nullability.
+  ([90d1cdc](https://github.com/kiwano-js/kiwano/commit/90d1cdc42435b42a31bbc7455f7157e9e1d1450d))
+
 ## [3.0.0-beta.12](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.11...v3.0.0-beta.12) - 2026-10-19
 
 ### Added
