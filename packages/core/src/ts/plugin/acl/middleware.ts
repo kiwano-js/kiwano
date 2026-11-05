@@ -6,7 +6,7 @@ import type { Middleware } from "../../common";
 
 export interface AclMiddlewareOptions {
     rolePath?: string,
-    onForbidden?: (resource: string) => void
+    onForbidden?: (resource: string) => void | Promise<void>
 }
 
 export const defaultAclMiddlewareOptions: AclMiddlewareOptions = {
@@ -30,7 +30,8 @@ export function honoAclMiddleware(acl: AclPlugin, config: AclValidateConfigType 
         const allowed = acl.validate(config, role);
 
         if(!allowed){
-            fullOptions.onForbidden(fullPath);
+            await fullOptions.onForbidden(fullPath);
+            throw new ForbiddenError(`No access to ${fullPath}`);
         }
 
         return await next();
@@ -41,7 +42,7 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
 
     const fullOptions = getOptions(options);
 
-    return (resolve, root, args, context, info) => {
+    return async (resolve, root, args, context, info) => {
 
         const fieldResource = `${info.parentType.name}.${info.fieldName}`;
         const parsedConfig = { resource: `${schemaName}:${fieldResource}` };
@@ -50,7 +51,8 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
         const allowed = acl.validate(parsedConfig, role);
 
         if(!allowed){
-            fullOptions.onForbidden(fieldResource);
+            await fullOptions.onForbidden(fieldResource);
+            throw new ForbiddenError(`No access to ${fieldResource}`);
         }
 
         return resolve(root, args, context, info);
