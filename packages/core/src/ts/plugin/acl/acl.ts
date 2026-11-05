@@ -137,6 +137,11 @@ export class AclPlugin implements Plugin {
             if (this.isRoleIncluded(role, rule.roles)) {
                 determinedAction = action;
             }
+            else if(action === AclAction.ALLOW){
+
+                // A more specific allow-list restricts broader grants for other roles.
+                determinedAction = AclAction.DENY;
+            }
         }
 
         return determinedAction === AclAction.ALLOW;
