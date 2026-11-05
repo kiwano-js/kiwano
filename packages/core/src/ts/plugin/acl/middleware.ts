@@ -3,6 +3,7 @@ import { defaults, get } from "es-toolkit/compat";
 import type { AclValidateConfigType, AclPlugin } from "./acl";
 import { ForbiddenError } from "../../error/resolver";
 import type { Middleware } from "../../common";
+import { validateInputArguments } from "./input";
 
 export interface AclMiddlewareOptions {
     rolePath?: string,
@@ -41,7 +42,7 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
 
     const fullOptions = getOptions(options);
 
-    return (resolve, root, args, context, info) => {
+    return async (resolve, root, args, context, info) => {
 
         const fieldResource = `${info.parentType.name}.${info.fieldName}`;
         const parsedConfig = { resource: `${schemaName}:${fieldResource}` };
@@ -52,6 +53,8 @@ export function graphQLAclMiddleware(acl: AclPlugin, schemaName: string, options
         if(!allowed){
             fullOptions.onForbidden(fieldResource);
         }
+
+        await validateInputArguments(acl, args, role, info, fullOptions.onForbidden);
 
         return resolve(root, args, context, info);
     }
