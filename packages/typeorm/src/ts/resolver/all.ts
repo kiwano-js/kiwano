@@ -6,7 +6,7 @@ import type { DataSource, SelectQueryBuilder } from "typeorm";
 import { type AnyObject, type FieldBuilderInfo, ForbiddenError, type Optional, type OptionalPromise, type ResolverInfo } from "@kiwano/core";
 
 import type { ModelType } from "../common";
-import { hooksExecutor, type ModelQueryResolverHooks } from "./common";
+import { hooksExecutor, validateCountAccess, type ModelQueryResolverHooks } from "./common";
 import type { Plugin } from "../plugin";
 
 export interface AllResolverOptionsPartial {
@@ -20,6 +20,7 @@ export interface AllResolverOptions extends AllResolverOptionsPartial {
 }
 
 export interface AllResolverHelpers {
+    authorizeCount(): Promise<void>
     getQueryBuilder(extra?: any): Promise<SelectQueryBuilder<any>>
     fetchData(extra?: any): Promise<any>
 }
@@ -72,6 +73,10 @@ export function allResolver<ModelType, SourceType=any>(options: AllResolverOptio
 
         // Create helpers
         const helpers: AllResolverHelpers = {
+
+            async authorizeCount(): Promise<void>{
+                await validateCountAccess(hookCollections, '$allAllowed', resolverInfo);
+            },
 
             async getQueryBuilder(extra?: any){
 

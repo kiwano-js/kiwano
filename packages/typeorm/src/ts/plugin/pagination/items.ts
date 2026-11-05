@@ -70,6 +70,8 @@ export class ItemsPaginationPluginHooks implements IItemsPaginationPluginHooks {
 
     async getTotalCount(items: any[], info: AllResolverInfo<any> | RelationResolverInfo<any>): Promise<number> {
 
+        await info.helpers.authorizeCount();
+
         const queryBuilder = await info.helpers.getQueryBuilder({ count: true });
         return await queryBuilder.getCount();
     }
