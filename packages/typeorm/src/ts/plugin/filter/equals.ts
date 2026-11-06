@@ -167,8 +167,10 @@ export class EqualsFilterPluginHooks implements IEqualsFilterPluginHooks {
             throw new PluginError(`Relation "${relationConfig.relation}" not available for filtering, only many to one relations are supported`);
         }
 
-        const joinAliasName = `EqualsFilterPluginRelation${relationMeta.inverseEntityMetadata!.name}`;
-        addRelationJoin(builder, relationMeta, metadata.name, joinAliasName);
+        const joinAliasName = `EqualsFilterPluginRelation${metadata.name}_${relationMeta.propertyPath}`;
+        if(!builder.expressionMap.joinAttributes.some(join => join.alias.name === joinAliasName)){
+            addRelationJoin(builder, relationMeta, metadata.name, joinAliasName);
+        }
 
         return joinAliasName;
     }
