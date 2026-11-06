@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0-beta.14](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.13...v3.0.0-beta.14) - 2026-11-06
+
+### Fixed
+
+- Fixed duplicate joins when multiple equals filters use the same TypeORM
+  relation. Both conditions remain combined with AND, including paginated
+  queries and `totalCount`-only queries. Different relations to the same entity
+  keep separate joins. Applications can remove local hooks that work around
+  duplicate equals-filter joins after upgrading.
+  ([b004274](https://github.com/kiwano-js/kiwano/commit/b004274bf1b04342c29d3ca793e6ec5164153802))
+
 ## [3.0.0-beta.13](https://github.com/kiwano-js/kiwano/compare/v3.0.0-beta.12...v3.0.0-beta.13) - 2026-10-20
 
 ### Fixed
